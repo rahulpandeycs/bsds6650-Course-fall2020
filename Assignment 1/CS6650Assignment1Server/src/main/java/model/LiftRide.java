@@ -3,12 +3,12 @@ package model;
 public class LiftRide {
 
   String resortID;
-  String dayID;
-  String skierID;
-  String time;
-  String liftID;
+  int dayID;
+  int  skierID;
+  int time;
+  int liftID;
 
-  public LiftRide(String resortID, String dayID, String skierID, String time, String liftID) {
+  public LiftRide(String resortID, int dayID, int skierID, int time, int liftID) {
     this.resortID = resortID;
     this.dayID = dayID;
     this.skierID = skierID;
@@ -24,35 +24,35 @@ public class LiftRide {
     this.resortID = resortID;
   }
 
-  public String getDayID() {
+  public int getDayID() {
     return dayID;
   }
 
-  public void setDayID(String dayID) {
+  public void setDayID(int dayID) {
     this.dayID = dayID;
   }
 
-  public String getSkierID() {
+  public int getSkierID() {
     return skierID;
   }
 
-  public void setSkierID(String skierID) {
+  public void setSkierID(int skierID) {
     this.skierID = skierID;
   }
 
-  public String getTime() {
+  public int getTime() {
     return time;
   }
 
-  public void setTime(String time) {
+  public void setTime(int time) {
     this.time = time;
   }
 
-  public String getLiftID() {
+  public int getLiftID() {
     return liftID;
   }
 
-  public void setLiftID(String liftID) {
+  public void setLiftID(int liftID) {
     this.liftID = liftID;
   }
 }
