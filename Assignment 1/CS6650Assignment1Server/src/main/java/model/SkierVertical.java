@@ -5,6 +5,11 @@ public class SkierVertical {
   String resortID;
   int totalVert;
 
+  public SkierVertical(String resortID, int totalVert) {
+    this.resortID = resortID;
+    this.totalVert = totalVert;
+  }
+
   public int getTotalVert() {
     return totalVert;
   }
@@ -22,7 +27,11 @@ public class SkierVertical {
     this.resortID = resortID;
   }
 
-
-
-
+  @Override
+  public String toString() {
+    return "SkierVertical{" +
+            "resortID='" + resortID + '\'' +
+            ", totalVert=" + totalVert +
+            '}';
+  }
 }

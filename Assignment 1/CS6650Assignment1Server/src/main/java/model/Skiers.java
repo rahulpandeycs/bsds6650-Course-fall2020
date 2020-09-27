@@ -5,6 +5,11 @@ public class Skiers {
   String skierID;
   int verticalTotal;
 
+  public Skiers(String skierID, int verticalTotal) {
+    this.skierID = skierID;
+    this.verticalTotal = verticalTotal;
+  }
+
   public String getSkierID() {
     return skierID;
   }
@@ -19,5 +24,13 @@ public class Skiers {
 
   public void setVerticalTotal(int verticalTotal) {
     this.verticalTotal = verticalTotal;
+  }
+
+  @Override
+  public String toString() {
+    return "Skiers{" +
+            "skierID='" + skierID + '\'' +
+            ", verticalTotal=" + verticalTotal +
+            '}';
   }
 }
