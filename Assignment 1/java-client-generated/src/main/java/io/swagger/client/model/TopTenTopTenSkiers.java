@@ -13,25 +13,20 @@
 package io.swagger.client.model;
 
 import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
+
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
+
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.io.IOException;
+
 /**
  * TopTenTopTenSkiers
  */
-
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-09-24T14:35:43.986Z[GMT]")
 public class TopTenTopTenSkiers {
   @SerializedName("skierID")
   private String skierID = null;
 
-  @SerializedName("VertcialTotal")
-  private Integer vertcialTotal = null;
+  @SerializedName("verticalTotal")
+  private Integer verticalTotal = null;
 
   public TopTenTopTenSkiers skierID(String skierID) {
     this.skierID = skierID;
@@ -52,7 +47,7 @@ public class TopTenTopTenSkiers {
   }
 
   public TopTenTopTenSkiers vertcialTotal(Integer vertcialTotal) {
-    this.vertcialTotal = vertcialTotal;
+    this.verticalTotal = vertcialTotal;
     return this;
   }
 
@@ -61,12 +56,12 @@ public class TopTenTopTenSkiers {
    * @return vertcialTotal
   **/
   @Schema(example = "30400", description = "")
-  public Integer getVertcialTotal() {
-    return vertcialTotal;
+  public Integer getVerticalTotal() {
+    return verticalTotal;
   }
 
-  public void setVertcialTotal(Integer vertcialTotal) {
-    this.vertcialTotal = vertcialTotal;
+  public void setVerticalTotal(Integer verticalTotal) {
+    this.verticalTotal = verticalTotal;
   }
 
 
@@ -80,12 +75,12 @@ public class TopTenTopTenSkiers {
     }
     TopTenTopTenSkiers topTenTopTenSkiers = (TopTenTopTenSkiers) o;
     return Objects.equals(this.skierID, topTenTopTenSkiers.skierID) &&
-        Objects.equals(this.vertcialTotal, topTenTopTenSkiers.vertcialTotal);
+        Objects.equals(this.verticalTotal, topTenTopTenSkiers.verticalTotal);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(skierID, vertcialTotal);
+    return Objects.hash(skierID, verticalTotal);
   }
 
 
@@ -95,7 +90,7 @@ public class TopTenTopTenSkiers {
     sb.append("class TopTenTopTenSkiers {\n");
     
     sb.append("    skierID: ").append(toIndentedString(skierID)).append("\n");
-    sb.append("    vertcialTotal: ").append(toIndentedString(vertcialTotal)).append("\n");
+    sb.append("    vertcialTotal: ").append(toIndentedString(verticalTotal)).append("\n");
     sb.append("}");
     return sb.toString();
   }

@@ -28,7 +28,6 @@ import java.util.List;
  * TopTen
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2020-09-24T14:35:43.986Z[GMT]")
 public class TopTen {
   @SerializedName("topTenSkiers")
   private List<TopTenTopTenSkiers> topTenSkiers = null;
@@ -82,7 +81,6 @@ public class TopTen {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class TopTen {\n");
-    
     sb.append("    topTenSkiers: ").append(toIndentedString(topTenSkiers)).append("\n");
     sb.append("}");
     return sb.toString();
