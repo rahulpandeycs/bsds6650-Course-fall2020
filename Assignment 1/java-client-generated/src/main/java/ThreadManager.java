@@ -19,7 +19,7 @@ public class ThreadManager implements Runnable {
     this.globalCountSuccess = new SharedGlobalCount();
   }
 
-  public void submitToThreadPhaseExecution(ExecutorService threadPool, PhaseExecutionParameter phaseExecutionParameter, int currentThreads,
+  public void submitToThreadPhaseExecution(ExecutorService threadPool, PhaseExecutionParameter phaseExecutionParameter,
                                            double countDownThreshold) throws InterruptedException {
     CountDownLatch latch = new CountDownLatch((int)(phaseExecutionParameter.getThreadsToExecute()*countDownThreshold));
 
@@ -43,7 +43,7 @@ public class ThreadManager implements Runnable {
     try {
       PhaseExecutionParameter phase1ExecutionParameter  = new PhaseExecutionParameter(5,100,0,
               parameters.getNumSkiers()*4/parameters.getMaxThreads(),0,90,parameters.numLifts, parameters.getMaxThreads()/4);
-      submitToThreadPhaseExecution(WORKER_THREAD_POOL, phase1ExecutionParameter, parameters.getMaxThreads()/4, 1/10);
+      submitToThreadPhaseExecution(WORKER_THREAD_POOL, phase1ExecutionParameter, 1/10);
     } catch (InterruptedException e) {
       logger.error("Thread execution failed : " + e.getMessage() + "with reason : " + e.getCause());
     }
@@ -53,7 +53,7 @@ public class ThreadManager implements Runnable {
     try {
       PhaseExecutionParameter phase1ExecutionParameter2  = new PhaseExecutionParameter(5,100,0,
               parameters.getNumSkiers()*4/parameters.getMaxThreads(),91,360,parameters.numLifts, parameters.getMaxThreads());
-      submitToThreadPhaseExecution(WORKER_THREAD_POOL, phase1ExecutionParameter2, parameters.getMaxThreads()/4, 1/10);
+      submitToThreadPhaseExecution(WORKER_THREAD_POOL, phase1ExecutionParameter2, 1/10);
     } catch (InterruptedException e) {
       logger.error("Thread execution failed : " + e.getMessage() + "with reason : " + e.getCause());
     }
@@ -62,7 +62,7 @@ public class ThreadManager implements Runnable {
     try {
       PhaseExecutionParameter phase1ExecutionParameter3  = new PhaseExecutionParameter(10,100,0,
               parameters.getNumSkiers()*4/parameters.getMaxThreads(),361,420,parameters.numLifts, parameters.getMaxThreads()/4);
-      submitToThreadPhaseExecution(WORKER_THREAD_POOL, phase1ExecutionParameter3, parameters.getMaxThreads()/4, 1/10);
+      submitToThreadPhaseExecution(WORKER_THREAD_POOL, phase1ExecutionParameter3, 1/10);
     } catch (InterruptedException e) {
       logger.error("Thread execution failed : " + e.getMessage() + "with reason : " + e.getCause());
     }
