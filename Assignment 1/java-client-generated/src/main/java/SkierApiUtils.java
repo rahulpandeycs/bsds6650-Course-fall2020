@@ -15,15 +15,8 @@ public class SkierApiUtils {
   private static Logger logger = LoggerFactory.getLogger(SkierApiUtils.class);
 
   // /skiers/{resortID}/days/{dayID}/skiers/{skierID}
-  static SkierVertical callSkierApiGetWithParameters(SkiersApi apiInstance, String resortID, String dayId, String skierId){
-    SkierVertical skierVertical = null;
-    try {
-      skierVertical = apiInstance.getSkierDayVertical(resortID,dayId,skierId);
-    } catch (ApiException e) {
-      System.err.println("Exception when calling SkierApi#/skiers/{resortID}/days/{dayID}/skiers/{skierID}");
-      e.printStackTrace();
-      logger.error("The get request to Resort API failed with error: " + e.getMessage() + "Reason being: " +e.getCause());
-    }
+  static SkierVertical callSkierApiGetWithParameters(SkiersApi apiInstance, String resortID, String dayId, String skierId) throws ApiException {
+    SkierVertical skierVertical = apiInstance.getSkierDayVertical(resortID,dayId,skierId);
     return skierVertical;
   }
 
@@ -52,5 +45,15 @@ public class SkierApiUtils {
       e.printStackTrace();
       logger.error("The get request to Resort API failed with error: " + e.getMessage() + "Reason being: " +e.getCause());
     }
+  }
+
+  public static LiftRide getSampleLiftRide(){
+    final LiftRide liftRide = new LiftRide();
+    liftRide.setResortID("Mission Ridge");
+    liftRide.setDayID("23");
+    liftRide.setSkierID("7889");
+    liftRide.setTime("217");
+    liftRide.setLiftID("21");
+    return liftRide;
   }
 }
