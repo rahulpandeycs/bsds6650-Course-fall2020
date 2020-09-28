@@ -15,36 +15,23 @@ public class SkierApiUtils {
   private static Logger logger = LoggerFactory.getLogger(SkierApiUtils.class);
 
   // /skiers/{resortID}/days/{dayID}/skiers/{skierID}
-  static SkierVertical callSkierApiGetWithParameters(SkiersApi apiInstance, String resortID, String dayId, String skierId) throws ApiException {
-    SkierVertical skierVertical = apiInstance.getSkierDayVertical(resortID,dayId,skierId);
+  static ApiResponse<SkierVertical> callSkierApiGetWithParameters(SkiersApi apiInstance, String resortID, String dayId, String skierId) throws ApiException {
+    ApiResponse<SkierVertical> skierVertical = apiInstance.getSkierDayVerticalWithHttpInfo(resortID, dayId, skierId);
     return skierVertical;
   }
 
   // /skiers/{skierID}/vertical
-  static SkierVertical callSkierResortTotalsWithOneParameters(SkiersApi apiInstance, String skierId){
-    SkierVertical skierVerticalR = null;
-    ApiResponse<SkierVertical> skierResortTotalsResponse = null;
+  static SkierVertical callSkierResortTotalsWithOneParameters(SkiersApi apiInstance, String skierId) throws ApiException {
     List<String> resort = Arrays.asList("resort_example");
-    try {
-      skierResortTotalsResponse = apiInstance.getSkierResortTotalsWithHttpInfo(skierId,resort);
-    } catch (ApiException e) {
-      System.err.println("Exception when calling SkierApi#getSkierResortTotalsWithHttpInfo");
-      e.printStackTrace();
-      logger.error("The get request to Resort API failed with error: " + e.getMessage() + "Reason being: " +e.getCause());
-    }
+    ApiResponse<SkierVertical>  skierResortTotalsResponse = apiInstance.getSkierResortTotalsWithHttpInfo(skierId,resort);
     return skierResortTotalsResponse.getData();
   }
 
   // /skiers/{skierID}/vertical
-  public static void callWriteNewLiftRide(SkiersApi apiInstance, LiftRide body){
+  public static ApiResponse<Void> callWriteNewLiftRide(SkiersApi apiInstance, LiftRide body) throws ApiException {
     List<String> resort = Arrays.asList("resort_example");
-    try {
-      apiInstance.writeNewLiftRide(body);
-    } catch (ApiException e) {
-      System.err.println("Exception when calling SkierApi#getSkierResortTotalsWithHttpInfo");
-      e.printStackTrace();
-      logger.error("The get request to Resort API failed with error: " + e.getMessage() + "Reason being: " +e.getCause());
-    }
+    ApiResponse<Void> response = apiInstance.writeNewLiftRideWithHttpInfo(body);
+    return response;
   }
 
   public static LiftRide getSampleLiftRide(){
