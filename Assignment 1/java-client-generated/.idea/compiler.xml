@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="bsds-cs6650-hw1-clientPart1" target="1.7" />
+      <module name="bsds-cs6650-hw1-clientPart1" target="8" />
     </bytecodeTargetLevel>
   </component>
 </project>

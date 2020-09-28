@@ -14,7 +14,7 @@ public class RestApiClient {
   // private static SkierVertical Resorts;
 
   public static void main(String[] args) {
-    
+
     try (InputStream input = RestApiClient.class.getClassLoader().getResourceAsStream("config.properties")) {
       Properties prop = new Properties();
       if (input == null) {
@@ -24,6 +24,8 @@ public class RestApiClient {
       //load a properties file from class path, inside static method
       prop.load(input);
       ConfigParameters parameters = new ConfigParameters(prop);
+      ThreadManager threadManager = new ThreadManager(parameters);
+      threadManager.run();
 
     } catch (IOException ex) {
       logger.error("The config.properties not present");
