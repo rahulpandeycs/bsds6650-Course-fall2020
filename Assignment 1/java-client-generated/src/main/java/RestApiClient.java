@@ -30,10 +30,5 @@ public class RestApiClient {
     } catch (IOException ex) {
       logger.error("The config.properties not present");
     }
-    logger.info("Started with Execution of Phase 1 at: " + System.currentTimeMillis());
-
-
-    logger.info("Ended with Execution of Phase 1 at: " + System.currentTimeMillis());
-
   }
 }

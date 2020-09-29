@@ -4,6 +4,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class ThreadManager implements Runnable {
 
@@ -19,14 +20,23 @@ public class ThreadManager implements Runnable {
     this.globalCountSuccess = new SharedGlobalCount();
   }
 
-  public void submitToThreadPhaseExecution(ExecutorService threadPool, PhaseExecutionParameter phaseExecutionParameter,
+  private void submitToThreadPhaseExecution(ExecutorService threadPool, PhaseExecutionParameter phaseExecutionParameter,
                                            double countDownThreshold) throws InterruptedException {
+
     CountDownLatch latch = new CountDownLatch((int)(phaseExecutionParameter.getThreadsToExecute()*countDownThreshold));
 
+    int startSkierId = 1;
+    int range = parameters.numSkiers/phaseExecutionParameter.getThreadsToExecute();
+
     for (int i = 0; i < phaseExecutionParameter.getThreadsToExecute(); i++) {
-      threadPool.submit(() -> {
-          new ThreadPhaseExecution(parameters, phaseExecutionParameter, this, latch);
-      });
+      phaseExecutionParameter.setStartSkierId(startSkierId);
+      phaseExecutionParameter.setEndSkierId(startSkierId+range-1);
+      Runnable phaseThread = new ThreadPhaseExecution(parameters, phaseExecutionParameter, this, latch);
+//      threadPool.execute(() -> {
+//          new ThreadPhaseExecution(parameters, phaseExecutionParameter, this, latch);
+//      });
+      threadPool.submit(phaseThread);
+      startSkierId+=range;
     }
     // wait for the latch to be decremented
     latch.await();
@@ -35,10 +45,10 @@ public class ThreadManager implements Runnable {
   @Override
   public void run() {
 
+    long startTime = System.currentTimeMillis();
     //Create all threads
     ExecutorService WORKER_THREAD_POOL
             = Executors.newFixedThreadPool(parameters.maxThreads/4 + parameters.maxThreads + parameters.maxThreads/4);
-
     //Execute Phase 1
     try {
       PhaseExecutionParameter phase1ExecutionParameter  = new PhaseExecutionParameter(5,100,0,
@@ -66,5 +76,25 @@ public class ThreadManager implements Runnable {
     } catch (InterruptedException e) {
       logger.error("Thread execution failed : " + e.getMessage() + "with reason : " + e.getCause());
     }
+
+    WORKER_THREAD_POOL.shutdown();
+
+    try {
+      if (!WORKER_THREAD_POOL.awaitTermination(1, TimeUnit.HOURS)) {
+        WORKER_THREAD_POOL.shutdownNow();
+      }
+    } catch (InterruptedException ex) {
+      WORKER_THREAD_POOL.shutdownNow();
+      Thread.currentThread().interrupt();
+    }
+
+    long endTime = System.currentTimeMillis();
+
+    System.out.println("Number of successful requests sent : " + globalCountSuccess.counter);
+    System.out.println("Number of unsuccessful requests :" + globalCountFail.counter);
+    System.out.println("The total run time (wall time) :" + (endTime - startTime));
+
+    int totalRequests = globalCountSuccess.counter + globalCountFail.counter;
+    System.out.println("Throughput: " + totalRequests/(endTime - startTime));
   }
 }

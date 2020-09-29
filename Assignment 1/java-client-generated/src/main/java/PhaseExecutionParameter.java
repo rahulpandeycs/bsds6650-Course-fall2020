@@ -1,14 +1,15 @@
 public class PhaseExecutionParameter {
 
 
-  int numGet;
-  int numPost;
-  int startSkierId;
-  int endSkierId;
-  int startTime;
-  int endTime;
-  int numLifts;
-  int threadsToExecute;
+  private int numGet;
+  private int numPost;
+  private int startSkierId;
+  private int endSkierId;
+  private int startTime;
+  private int endTime;
+  private int numLifts;
+  private int threadsToExecute;
+
 
   public PhaseExecutionParameter(int numGet, int numPost, int startSkierId, int endSkierId, int startTime, int endTime, int numLifts, int threadsToExecute) {
     this.numGet = numGet;
@@ -52,6 +53,15 @@ public class PhaseExecutionParameter {
 
   public int getThreadsToExecute() {
     return threadsToExecute;
+  }
+
+
+  public void setStartSkierId(int startSkierId) {
+    this.startSkierId = startSkierId;
+  }
+
+  public void setEndSkierId(int endSkierId) {
+    this.endSkierId = endSkierId;
   }
 
 }
