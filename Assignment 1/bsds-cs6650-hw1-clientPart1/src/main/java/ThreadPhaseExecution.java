@@ -38,23 +38,18 @@ public class ThreadPhaseExecution implements Runnable {
 
     SkiersApi skiersApi = new SkiersApi();
 
-    //Do numPost POST Calls
-    int randomSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId()+ 1);
+    //Random for GET Call
     int dayId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartTime(), phaseExecutionParameter.getEndTime() + 1);
-    int randomLiftNum = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getNumLifts());
 
     //Create liftRide for write API
     LiftRide liftRide = SkierApiUtils.getSampleLiftRide();
-    liftRide.dayID(String.valueOf(dayId));
-    liftRide.setLiftID(String.valueOf(randomLiftNum));
-    liftRide.setTime(String.valueOf(dayId));
-
     executePostCall(skiersApi, liftRide);
 
     // Do numGet Get Calls:
     for (int i = 0; i < phaseExecutionParameter.getNumGet(); i++) {
+      int randomGetSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId()+ 1);
       try {
-        ApiResponse<SkierVertical> skierResponse = SkierApiUtils.callSkierApiGetWithParameters(skiersApi, parameters.resortId, String.valueOf(dayId), String.valueOf(randomSkierId));
+        ApiResponse<SkierVertical> skierResponse = SkierApiUtils.callSkierApiGetWithParameters(skiersApi, parameters.resortId, String.valueOf(dayId), String.valueOf(randomGetSkierId));
         if (skierResponse.getStatusCode() == 200)
           successCount.incrementCounter();
         else {
@@ -77,6 +72,14 @@ public class ThreadPhaseExecution implements Runnable {
     client.setBasePath(parameters.getAddressPort());
 
     for (int i = 0; i < phaseExecutionParameter.getNumPost(); i++) {
+      int randomSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId()+ 1);
+      int dayId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartTime(), phaseExecutionParameter.getEndTime() + 1);
+      int randomLiftNum = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getNumLifts());
+
+      liftRide.setSkierID(String.valueOf(randomSkierId));
+      liftRide.setLiftID(String.valueOf(randomLiftNum));
+      liftRide.setTime(String.valueOf(dayId));
+
       try {
         ApiResponse<Void> writeResponse = SkierApiUtils.callWriteNewLiftRide(skiersApi, liftRide);
         if (writeResponse.getStatusCode() == 201) {
