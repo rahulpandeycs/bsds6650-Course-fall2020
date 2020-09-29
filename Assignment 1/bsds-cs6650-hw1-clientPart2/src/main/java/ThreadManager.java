@@ -16,7 +16,7 @@ public class ThreadManager implements Runnable {
   ConfigParameters parameters;
   SharedGlobalCount globalCountFail;
   SharedGlobalCount globalCountSuccess;
-  List<ExecutionResponseData> globalExecutionResponseData;
+  List<Future<List<ExecutionResponseData>>> globalExecutionResponseData;
 
   private static Logger logger = LoggerFactory.getLogger(ThreadManager.class);
 
@@ -28,21 +28,20 @@ public class ThreadManager implements Runnable {
   }
 
   private void submitToThreadPhaseExecution(ExecutorService threadPool, PhaseExecutionParameter phaseExecutionParameter,
-                                           double countDownThreshold) throws InterruptedException, ExecutionException {
+                                            double countDownThreshold) throws InterruptedException, ExecutionException {
 
-    CountDownLatch latch = new CountDownLatch((int)(phaseExecutionParameter.getThreadsToExecute()*countDownThreshold));
+    CountDownLatch latch = new CountDownLatch((int) (phaseExecutionParameter.getThreadsToExecute() * countDownThreshold));
 
     int startSkierId = 1;
-    int range = parameters.numSkiers/phaseExecutionParameter.getThreadsToExecute();
+    int range = parameters.numSkiers / phaseExecutionParameter.getThreadsToExecute();
 
     for (int i = 0; i < phaseExecutionParameter.getThreadsToExecute(); i++) {
       phaseExecutionParameter.setStartSkierId(startSkierId);
-      phaseExecutionParameter.setEndSkierId(startSkierId+range-1);
+      phaseExecutionParameter.setEndSkierId(startSkierId + range - 1);
       Callable<List<ExecutionResponseData>> phaseThread = new ThreadPhaseExecution(parameters, phaseExecutionParameter, this, latch);
       Future<List<ExecutionResponseData>> futureExecutionResponseData = threadPool.submit(phaseThread);
-      List<ExecutionResponseData> executionResponseData = futureExecutionResponseData.get();
-      globalExecutionResponseData.addAll(executionResponseData);
-      startSkierId+=range;
+      globalExecutionResponseData.add(futureExecutionResponseData);
+      startSkierId += range;
     }
     // wait for the latch to be decremented for to threshold value.
     latch.await();
@@ -54,12 +53,12 @@ public class ThreadManager implements Runnable {
     long startTime = System.currentTimeMillis();
     //Create all threads
     ExecutorService WORKER_THREAD_POOL
-            = Executors.newFixedThreadPool(parameters.maxThreads/4 + parameters.maxThreads + parameters.maxThreads/4);
+            = Executors.newFixedThreadPool(parameters.maxThreads / 4 + parameters.maxThreads + parameters.maxThreads / 4);
     //Execute Phase 1
     try {
-      PhaseExecutionParameter phase1ExecutionParameter  = new PhaseExecutionParameter(5,100,0,
-              parameters.getNumSkiers()*4/parameters.getMaxThreads(),0,90,parameters.numLifts, parameters.getMaxThreads()/4);
-      submitToThreadPhaseExecution(WORKER_THREAD_POOL, phase1ExecutionParameter, 1/10);
+      PhaseExecutionParameter phase1ExecutionParameter = new PhaseExecutionParameter(5, 100, 0,
+              parameters.getNumSkiers() * 4 / parameters.getMaxThreads(), 0, 90, parameters.numLifts, parameters.getMaxThreads() / 4);
+      submitToThreadPhaseExecution(WORKER_THREAD_POOL, phase1ExecutionParameter, 1 / 10);
     } catch (InterruptedException | ExecutionException e) {
       logger.error("Thread execution failed : " + e.getMessage() + "with reason : " + e.getCause());
     }
@@ -67,18 +66,18 @@ public class ThreadManager implements Runnable {
 
     //Execute Phase 2
     try {
-      PhaseExecutionParameter phase1ExecutionParameter2  = new PhaseExecutionParameter(5,100,0,
-              parameters.getNumSkiers()*4/parameters.getMaxThreads(),91,360,parameters.numLifts, parameters.getMaxThreads());
-      submitToThreadPhaseExecution(WORKER_THREAD_POOL, phase1ExecutionParameter2, 1/10);
+      PhaseExecutionParameter phase1ExecutionParameter2 = new PhaseExecutionParameter(5, 100, 0,
+              parameters.getNumSkiers() * 4 / parameters.getMaxThreads(), 91, 360, parameters.numLifts, parameters.getMaxThreads());
+      submitToThreadPhaseExecution(WORKER_THREAD_POOL, phase1ExecutionParameter2, 1 / 10);
     } catch (InterruptedException | ExecutionException e) {
       logger.error("Thread execution failed : " + e.getMessage() + "with reason : " + e.getCause());
     }
 
     //Execute Phase 3
     try {
-      PhaseExecutionParameter phase1ExecutionParameter3  = new PhaseExecutionParameter(10,100,0,
-              parameters.getNumSkiers()*4/parameters.getMaxThreads(),361,420,parameters.numLifts, parameters.getMaxThreads()/4);
-      submitToThreadPhaseExecution(WORKER_THREAD_POOL, phase1ExecutionParameter3, 1/10);
+      PhaseExecutionParameter phase1ExecutionParameter3 = new PhaseExecutionParameter(10, 100, 0,
+              parameters.getNumSkiers() * 4 / parameters.getMaxThreads(), 361, 420, parameters.numLifts, parameters.getMaxThreads() / 4);
+      submitToThreadPhaseExecution(WORKER_THREAD_POOL, phase1ExecutionParameter3, 1 / 10);
     } catch (InterruptedException | ExecutionException e) {
       logger.error("Thread execution failed : " + e.getMessage() + "with reason : " + e.getCause());
     }
@@ -96,16 +95,23 @@ public class ThreadManager implements Runnable {
 
     long endTime = System.currentTimeMillis();
 
-    PerformanceMetrics performanceMetrics = new PerformanceMetrics(globalExecutionResponseData);
-    int totalRequests = globalExecutionResponseData.size();
+    PerformanceMetrics performanceMetrics = null;
+    try {
+      performanceMetrics = new PerformanceMetrics(globalExecutionResponseData);
+      int totalRequests = performanceMetrics.getTotalRequests();
+      System.out.println("Mean responseTime:" + performanceMetrics.getMeanResponseTime());
+      System.out.println("Median responseTime:" + performanceMetrics.getMedianResponseTime());
+      System.out.println("The total run time (wall time) :" + (endTime - startTime));
+      System.out.println("Total Requests: " + performanceMetrics.getTotalRequests());
+      System.out.println("Throughput: " + totalRequests / (endTime - startTime));
+      System.out.println("p99 (99th percentile) response time :" + performanceMetrics.getP99Percentile());
+      System.out.println("Max response time:" + performanceMetrics.getMaxResponse());
 
-    System.out.println("Mean responseTime:" + performanceMetrics.getMeanResponseTime());
-    System.out.println("Mean responseTime:" + performanceMetrics.getMedianResponseTime());
-    System.out.println("The total run time (wall time) :" + (endTime - startTime));
-    System.out.println("Throughput: " + totalRequests/(endTime - startTime));
-    System.out.println("p99 (99th percentile) response time :" + performanceMetrics.getP99Percentile());
-    System.out.println("Max response time:" + performanceMetrics.getMaxResponse());
-
+    } catch (ExecutionException e) {
+      e.printStackTrace();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
 
   }
 }

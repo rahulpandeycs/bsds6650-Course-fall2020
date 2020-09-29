@@ -74,7 +74,7 @@ public class ThreadPhaseExecution implements Callable<List<ExecutionResponseData
     latch.countDown();
     threadManager.globalCountSuccess.incrementCounterBy(this.successCount.counter);
     threadManager.globalCountFail.incrementCounterBy(this.failCount.counter);
-    return null;
+    return  this.responseDataList;
   }
 
   void executePostCall(SkiersApi skiersApi, LiftRide liftRide) {
