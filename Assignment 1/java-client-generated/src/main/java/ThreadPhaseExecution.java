@@ -50,6 +50,7 @@ public class ThreadPhaseExecution implements Runnable {
     liftRide.setTime(String.valueOf(dayId));
 
     executePostCall(skiersApi, liftRide);
+
     // Do numGet Get Calls:
     for (int i = 0; i < phaseExecutionParameter.getNumGet(); i++) {
       try {

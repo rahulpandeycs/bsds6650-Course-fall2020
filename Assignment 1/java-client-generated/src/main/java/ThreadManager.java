@@ -32,9 +32,7 @@ public class ThreadManager implements Runnable {
       phaseExecutionParameter.setStartSkierId(startSkierId);
       phaseExecutionParameter.setEndSkierId(startSkierId+range-1);
       Runnable phaseThread = new ThreadPhaseExecution(parameters, phaseExecutionParameter, this, latch);
-//      threadPool.execute(() -> {
-//          new ThreadPhaseExecution(parameters, phaseExecutionParameter, this, latch);
-//      });
+
       threadPool.submit(phaseThread);
       startSkierId+=range;
     }
