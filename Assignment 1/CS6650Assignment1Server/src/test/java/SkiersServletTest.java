@@ -34,10 +34,10 @@ public class SkiersServletTest extends Mockito {
 
     new SkiersServlet().doGet(request, response);
 
-    //verify(request, atLeast(1)).getPathInfo("username"); // only if you want to verify username was called...
     writer.flush(); // it may not have been flushed yet...
     JsonParser parser = new JsonParser();
     assertEquals(parser.parse(stringWriter.toString()), parser.parse("{\"resortID\":\"Mission Ridge\",\"totalVert\":56734}\n"));
+    // assertEquals(response.getStatus(),200);
   }
 
   @Test
@@ -53,10 +53,11 @@ public class SkiersServletTest extends Mockito {
 
     new SkiersServlet().doGet(request, response);
 
-    //verify(request, atLeast(1)).getPathInfo("username"); // only if you want to verify username was called...
+
     writer.flush(); // it may not have been flushed yet...
     JsonParser parser = new JsonParser();
     assertEquals(parser.parse(stringWriter.toString()), parser.parse("{\"resortID\":\"Mission Ridge\",\"totalVert\":56734}"));
+   // assertEquals(response.getStatus(),200);
   }
 
   @Test
@@ -85,8 +86,67 @@ public class SkiersServletTest extends Mockito {
 
     new SkiersServlet().doPost(request, response);
 
- //   verify(request, atLeast(1)).getParameter("username"); // only if you want to verify username was called...
     writer.flush(); // it may not have been flushed yet...
     assertTrue(stringWriter.toString().contains("Records Created Successfully!"));
+   // assertEquals(response.getStatus(),201);
   }
+
+  @Test
+  public void testServletGetResortDaysNegative() throws Exception {
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+
+    when(request.getPathInfo()).thenReturn("/1/days/abc/skiers/3");
+
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
+
+    new SkiersServlet().doGet(request, response);
+
+    writer.flush(); // it may not have been flushed yet...
+    JsonParser parser = new JsonParser();
+    assertEquals(parser.parse(stringWriter.toString()), parser.parse("{\"message\":\"Data not found\"}"));
+   // assertEquals(response.getStatus(),404);
+  }
+
+
+  @Test
+  public void testServletGetResortDaysNegative2() throws Exception {
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+
+    when(request.getPathInfo()).thenReturn("/1/days/12/skiers/acs");
+
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
+
+    new SkiersServlet().doGet(request, response);
+
+    writer.flush(); // it may not have been flushed yet...
+    JsonParser parser = new JsonParser();
+    assertEquals(parser.parse(stringWriter.toString()), parser.parse("{\"message\":\"Data not found\"}"));
+   // assertEquals(response.getStatus(),404);
+  }
+
+  @Test
+  public void testServletGetResortDaysNegative3() throws Exception {
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+
+    when(request.getPathInfo()).thenReturn("/1/days/12/skiers/");
+
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
+
+    new SkiersServlet().doGet(request, response);
+
+    writer.flush(); // it may not have been flushed yet...
+    JsonParser parser = new JsonParser();
+    assertEquals(parser.parse(stringWriter.toString()), parser.parse("{\"message\":\"Invalid inputs supplied for: /1/days/12/skiers/\"}"));
+  //  assertEquals(response.getStatus(),400);
+  }
+
 }

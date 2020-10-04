@@ -11,10 +11,8 @@ import java.util.stream.Collectors;
 import javax.servlet.annotation.WebServlet;
 
 import model.LiftRide;
-import model.Resort;
 import model.ResponseMsg;
 import model.SkierVertical;
-import model.Skiers;
 
 @WebServlet(name = "SkierServlet")
 public class SkiersServlet extends javax.servlet.http.HttpServlet {
@@ -25,7 +23,7 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
     String URI = request.getPathInfo();
     ResponseMsg message = new ResponseMsg("");
 
-    if(!validatePOSTRequest(URI)) {
+    if (!validatePOSTRequest(URI)) {
       response.setStatus(HttpStatus.SC_BAD_REQUEST);
       message.setMessage("Invalid input");
     }
@@ -35,14 +33,14 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
       BufferedReader reader = request.getReader();
       requestBody = reader.lines().collect(Collectors.joining(System.lineSeparator()));
 
-      if(!validatePOSTRequestData(requestBody)){
+      if (!validatePOSTRequestData(requestBody)) {
         response.setStatus(HttpStatus.SC_BAD_REQUEST);
         message.setMessage("Complete data not provided!");
-      }else {
+      } else {
         message.setMessage("Records Created Successfully!");
         response.setStatus(HttpStatus.SC_CREATED);
       }
-    } else if("PUT".equalsIgnoreCase(request.getMethod()) || "DELETE".equalsIgnoreCase(request.getMethod())) {
+    } else if ("PUT".equalsIgnoreCase(request.getMethod()) || "DELETE".equalsIgnoreCase(request.getMethod())) {
       response.setStatus(HttpStatus.SC_NOT_IMPLEMENTED);
     }
 
@@ -50,7 +48,6 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
     response.setContentType("application/json");
     PrintWriter out = response.getWriter();
     out.println(jsonMessage);
-//    out.println("PathInfo:" + request.getPathInfo());
   }
 
   protected void doGet(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
@@ -60,13 +57,13 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
     final SkierVertical skierVertical = new SkierVertical("Mission Ridge", 56734);
 
     int validatedResult = validateGetRequest(URI);
-    if(validatedResult > 0) {
+    if (validatedResult > 0) {
       response.setStatus(HttpStatus.SC_OK);
-    } else if(validatedResult < 0){
-      response.setStatus(HttpStatus.SC_NOT_FOUND);
+    } else if (validatedResult < 0) {
+      response.setStatus(HttpStatus.SC_BAD_REQUEST);
       message.setMessage("Invalid inputs supplied for: " + URI);
     } else {
-      response.setStatus(HttpStatus.SC_BAD_REQUEST);
+      response.setStatus(HttpStatus.SC_NOT_FOUND);
       message.setMessage("Data not found");
     }
 
@@ -75,7 +72,7 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
     PrintWriter out = response.getWriter();
     response.setCharacterEncoding("UTF-8");
 
-    if(!message.toString().equals(""))
+    if (!message.toString().equals(""))
       out.println(jsonMessage);
     else
       out.println(this.gson.toJson(skierVertical));
@@ -85,17 +82,31 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
   int validateGetRequest(String URI) {
     // /skiers/{resortID}/days/{dayID}/skiers/{skierID}
     String[] splitURI = URI.split("/");
-    if(splitURI.length == 3){
-      if(!(splitURI[2].equals("vertical"))) return 0;
-    } else if(splitURI.length == 6){
-      if(!(splitURI[2].equals("days") && splitURI[4].equals("skiers"))) return 0;
+    if (splitURI.length == 3) {
+      if (!(splitURI[2].equals("vertical"))) return 0;
+      String skierID = splitURI[1];
+      try {
+        Integer.parseInt(skierID);
+      } catch (NumberFormatException ex) {
+        return 0;
+      }
+    } else if (splitURI.length == 6) {
+      if (!(splitURI[2].equals("days") && splitURI[4].equals("skiers"))) return 0;
+      String dayID = splitURI[3];
+      String skierID = splitURI[5];
+      try {
+        Integer.parseInt(skierID);
+        Integer.parseInt(dayID);
+      } catch (NumberFormatException ex) {
+        return 0;
+      }
     } else
       return -1;
     return 1;
   }
 
   boolean validatePOSTRequest(String URI) {
-    if(!URI.equals("/liftrides")) return false;
+    if (!URI.equals("/liftrides")) return false;
     return true;
   }
 

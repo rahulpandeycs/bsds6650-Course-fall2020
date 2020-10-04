@@ -1,6 +1,10 @@
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -95,21 +99,29 @@ public class ThreadManager implements Runnable {
 
     long endTime = System.currentTimeMillis();
 
-    PerformanceMetrics performanceMetrics = null;
     try {
-      performanceMetrics = new PerformanceMetrics(globalExecutionResponseData);
+      PerformanceMetrics performanceMetrics = new PerformanceMetrics(globalExecutionResponseData);
       int totalRequests = performanceMetrics.getTotalRequests();
-      System.out.println("Mean responseTime:" + performanceMetrics.getMeanResponseTime());
-      System.out.println("Median responseTime:" + performanceMetrics.getMedianResponseTime());
-      System.out.println("The total run time (wall time) :" + (endTime - startTime));
+      System.out.println("Mean responseTime:" + performanceMetrics.getMeanResponseTime() + " ms");
+      System.out.println("Median responseTime:" + performanceMetrics.getMedianResponseTime() + " ms");
+      System.out.println("The total run time (wall time) :" + (endTime - startTime) + " ms");
       System.out.println("Total Requests: " + performanceMetrics.getTotalRequests());
-      System.out.println("Throughput: " + totalRequests / (endTime - startTime));
-      System.out.println("p99 (99th percentile) response time :" + performanceMetrics.getP99Percentile());
-      System.out.println("Max response time:" + performanceMetrics.getMaxResponse());
+      System.out.println("Throughput: " + (totalRequests * 1000 / (endTime - startTime)) + " requests/sec");
+      System.out.println("p99 (99th percentile) response time :" + performanceMetrics.getPercentile(99) + " ms");
+      System.out.println("Max response time:" + performanceMetrics.getMaxResponse() + " ms");
 
+
+      System.out.println("Writing data to CSV");
+      URI uri = ClassLoader.getSystemResource(Constants.PERFORMANCE_METRICS_CSV).toURI();
+      CommonUtils.writeCsvFromBean(Paths.get(uri), performanceMetrics.getExecutionResponseList());
+      System.out.println("Successfully Completed, Results are stored at: " + Paths.get(uri));
     } catch (ExecutionException e) {
       e.printStackTrace();
     } catch (InterruptedException e) {
+      e.printStackTrace();
+    } catch (URISyntaxException e) {
+      e.printStackTrace();
+    } catch (Exception e) {
       e.printStackTrace();
     }
 

@@ -89,10 +89,10 @@ public class ThreadManager implements Runnable {
     long endTime = System.currentTimeMillis();
 
     System.out.println("Number of successful requests sent : " + globalCountSuccess.counter);
-    System.out.println("Number of unsuccessful requests :" + globalCountFail.counter);
-    System.out.println("The total run time (wall time) :" + (endTime - startTime));
+    System.out.println("Number of unsuccessful requests :" + globalCountFail.counter + " ms");
+    System.out.println("The total run time (wall time) :" + (endTime - startTime) + " ms");
 
     int totalRequests = globalCountSuccess.counter + globalCountFail.counter;
-    System.out.println("Throughput: " + totalRequests/(endTime - startTime));
+    System.out.println("Throughput: " + totalRequests*1000/(endTime - startTime) + " Requests/Second");
   }
 }

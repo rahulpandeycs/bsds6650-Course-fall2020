@@ -25,7 +25,8 @@ public class RestApiClientMain {
       prop.load(input);
       ConfigParameters parameters = new ConfigParameters(prop);
       ThreadManager threadManager = new ThreadManager(parameters);
-      threadManager.run();
+      Thread mainThread = new Thread(threadManager);
+      mainThread.start();
     } catch (IOException ex) {
       logger.error("The config.properties not present");
     }

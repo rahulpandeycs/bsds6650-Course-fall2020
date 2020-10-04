@@ -10,7 +10,7 @@ import java.util.Properties;
 public class RestApiClientMain {
 
   //  final static String basePath = "http://localhost:8081/CS6650Assignment1Server_war_exploded";
-  private static Logger logger = LoggerFactory.getLogger(RestApiClientMain.class);
+  final private static Logger logger = LoggerFactory.getLogger(RestApiClientMain.class);
   // private static SkierVertical Resorts;
 
   public static void main(String[] args) {
@@ -25,7 +25,8 @@ public class RestApiClientMain {
       prop.load(input);
       ConfigParameters parameters = new ConfigParameters(prop);
       ThreadManager threadManager = new ThreadManager(parameters);
-      threadManager.run();
+      Thread mainThread = new Thread(threadManager);
+      mainThread.start();
 
     } catch (IOException ex) {
       logger.error("The config.properties not present");
