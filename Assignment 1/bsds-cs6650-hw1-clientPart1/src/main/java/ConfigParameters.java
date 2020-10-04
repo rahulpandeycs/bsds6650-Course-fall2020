@@ -2,23 +2,33 @@ import java.util.Properties;
 
 public class ConfigParameters {
 
-  int maxThreads;
-  int numSkiers;
-  int numLifts;
-  int skiDay;
-  String resortId;
-  String addressPort;
+  private int maxThreads = 256;
+  private int numSkiers = 50000;
+  private int numLifts = 40;
+  private int skiDay = 1;
+  private String resortId = "SilverMt";
+  private String addressPort;
 
   public ConfigParameters(Properties properties) {
-    this.maxThreads = Integer.valueOf(properties.getProperty("cmd.maxThreads"));
-    this.numSkiers = Integer.valueOf(properties.getProperty("cmd.numSkiers"));
-    this.numLifts = Integer.valueOf(properties.getProperty("cmd.numLifts"));
-    this.skiDay = Integer.valueOf(properties.getProperty("cmd.skiDay"));
-    this.resortId = properties.getProperty("cmd.resortId");
+    if(properties.getProperty("cmd.maxThreads") != null){
+      this.maxThreads = Integer.valueOf(properties.getProperty("cmd.maxThreads"));
+    }
+
+    if(properties.getProperty("cmd.numSkiers") != null) {
+      this.numSkiers = Integer.valueOf(properties.getProperty("cmd.numSkiers"));
+    }
+
+    if(properties.getProperty("cmd.numLifts") != null){
+      this.numLifts = Integer.valueOf(properties.getProperty("cmd.numLifts"));
+    }
+    if(properties.getProperty("cmd.skiDay") != null){
+      this.skiDay = Integer.valueOf(properties.getProperty("cmd.skiDay"));
+    }
+    if(properties.getProperty("cmd.resortId") != null){
+      this.resortId = properties.getProperty("cmd.resortId");
+    }
     this.addressPort = properties.getProperty("cmd.addressPort");
   }
-
-
 
   public int getMaxThreads() {
     return maxThreads;

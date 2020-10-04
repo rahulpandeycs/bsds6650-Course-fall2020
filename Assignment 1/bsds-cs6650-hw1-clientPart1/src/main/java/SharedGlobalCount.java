@@ -1,6 +1,6 @@
 public class SharedGlobalCount {
 
-  int counter;
+ private int counter;
 
   synchronized public int getCounter() {
     return counter;

@@ -55,7 +55,7 @@ public class ThreadPhaseExecution implements Callable<List<ExecutionResponseData
       int randomGetSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId()+ 1);
       long startTime = System.currentTimeMillis();
       try {
-        ApiResponse<SkierVertical> skierResponse = SkierApiUtils.callSkierApiGetWithParameters(skiersApi, parameters.resortId, String.valueOf(dayId), String.valueOf(randomGetSkierId));
+        ApiResponse<SkierVertical> skierResponse = SkierApiUtils.callSkierApiGetWithParameters(skiersApi, parameters.getResortId(), String.valueOf(dayId), String.valueOf(randomGetSkierId));
         if (skierResponse.getStatusCode() == 200)
           successCount.incrementCounter();
         else {
@@ -72,8 +72,8 @@ public class ThreadPhaseExecution implements Callable<List<ExecutionResponseData
     }
 
     latch.countDown();
-    threadManager.globalCountSuccess.incrementCounterBy(this.successCount.counter);
-    threadManager.globalCountFail.incrementCounterBy(this.failCount.counter);
+    threadManager.getGlobalCountSuccess().incrementCounterBy(this.successCount.getCounter());
+    threadManager.getGlobalCountFail().incrementCounterBy(this.failCount.getCounter());
     return  this.responseDataList;
   }
 

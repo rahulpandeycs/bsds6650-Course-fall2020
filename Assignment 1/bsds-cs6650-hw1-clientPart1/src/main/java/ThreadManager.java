@@ -8,9 +8,9 @@ import java.util.concurrent.TimeUnit;
 
 public class ThreadManager implements Runnable {
 
-  ConfigParameters parameters;
-  SharedGlobalCount globalCountFail;
-  SharedGlobalCount globalCountSuccess;
+  private ConfigParameters parameters;
+  private SharedGlobalCount globalCountFail;
+  private SharedGlobalCount globalCountSuccess;
 
   private static Logger logger = LoggerFactory.getLogger(ThreadManager.class);
 
@@ -20,13 +20,20 @@ public class ThreadManager implements Runnable {
     this.globalCountSuccess = new SharedGlobalCount();
   }
 
+  public SharedGlobalCount getGlobalCountFail() {
+    return globalCountFail;
+  }
+
+  public SharedGlobalCount getGlobalCountSuccess() {
+    return globalCountSuccess;
+  }
+
   private void submitToThreadPhaseExecution(ExecutorService threadPool, PhaseExecutionParameter phaseExecutionParameter,
                                            double countDownThreshold) throws InterruptedException {
 
     CountDownLatch latch = new CountDownLatch((int)(phaseExecutionParameter.getThreadsToExecute()*countDownThreshold));
-
     int startSkierId = 1;
-    int range = parameters.numSkiers/phaseExecutionParameter.getThreadsToExecute();
+    int range = parameters.getNumSkiers()/phaseExecutionParameter.getThreadsToExecute();
 
     for (int i = 0; i < phaseExecutionParameter.getThreadsToExecute(); i++) {
       phaseExecutionParameter.setStartSkierId(startSkierId);
@@ -46,21 +53,22 @@ public class ThreadManager implements Runnable {
     long startTime = System.currentTimeMillis();
     //Create all threads
     ExecutorService WORKER_THREAD_POOL
-            = Executors.newFixedThreadPool(parameters.maxThreads/4 + parameters.maxThreads + parameters.maxThreads/4);
+            = Executors.newFixedThreadPool(parameters.getMaxThreads()/4 + parameters.getMaxThreads() + parameters.getMaxThreads()/4);
+
+    //Start and end Skier id are being set in submitToThreadPhaseExecution for each thread separately
     //Execute Phase 1
     try {
-      PhaseExecutionParameter phase1ExecutionParameter  = new PhaseExecutionParameter(5,100,0,
-              parameters.getNumSkiers()*4/parameters.getMaxThreads(),0,90,parameters.numLifts, parameters.getMaxThreads()/4);
+      PhaseExecutionParameter phase1ExecutionParameter  = new PhaseExecutionParameter(5,100,1,
+              parameters.getNumSkiers()*4/parameters.getMaxThreads(),0,90,parameters.getNumLifts(), parameters.getMaxThreads()/4);
       submitToThreadPhaseExecution(WORKER_THREAD_POOL, phase1ExecutionParameter, 1/10);
     } catch (InterruptedException e) {
       logger.error("Thread execution failed : " + e.getMessage() + "with reason : " + e.getCause());
     }
 
-
     //Execute Phase 2
     try {
-      PhaseExecutionParameter phase1ExecutionParameter2  = new PhaseExecutionParameter(5,100,0,
-              parameters.getNumSkiers()*4/parameters.getMaxThreads(),91,360,parameters.numLifts, parameters.getMaxThreads());
+      PhaseExecutionParameter phase1ExecutionParameter2  = new PhaseExecutionParameter(5,100,1,
+              parameters.getNumSkiers()*4/parameters.getMaxThreads(),91,360,parameters.getNumLifts(), parameters.getMaxThreads());
       submitToThreadPhaseExecution(WORKER_THREAD_POOL, phase1ExecutionParameter2, 1/10);
     } catch (InterruptedException e) {
       logger.error("Thread execution failed : " + e.getMessage() + "with reason : " + e.getCause());
@@ -68,8 +76,8 @@ public class ThreadManager implements Runnable {
 
     //Execute Phase 3
     try {
-      PhaseExecutionParameter phase1ExecutionParameter3  = new PhaseExecutionParameter(10,100,0,
-              parameters.getNumSkiers()*4/parameters.getMaxThreads(),361,420,parameters.numLifts, parameters.getMaxThreads()/4);
+      PhaseExecutionParameter phase1ExecutionParameter3  = new PhaseExecutionParameter(10,100,1,
+              parameters.getNumSkiers()*4/parameters.getMaxThreads(),361,420,parameters.getNumLifts(), parameters.getMaxThreads()/4);
       submitToThreadPhaseExecution(WORKER_THREAD_POOL, phase1ExecutionParameter3, 1/10);
     } catch (InterruptedException e) {
       logger.error("Thread execution failed : " + e.getMessage() + "with reason : " + e.getCause());
@@ -88,11 +96,11 @@ public class ThreadManager implements Runnable {
 
     long endTime = System.currentTimeMillis();
 
-    System.out.println("Number of successful requests sent : " + globalCountSuccess.counter);
-    System.out.println("Number of unsuccessful requests :" + globalCountFail.counter + " ms");
+    System.out.println("Number of successful requests sent : " + globalCountSuccess.getCounter());
+    System.out.println("Number of unsuccessful requests :" + globalCountFail.getCounter() + " ms");
     System.out.println("The total run time (wall time) :" + (endTime - startTime) + " ms");
 
-    int totalRequests = globalCountSuccess.counter + globalCountFail.counter;
+    int totalRequests = globalCountSuccess.getCounter() + globalCountFail.getCounter();
     System.out.println("Throughput: " + totalRequests*1000/(endTime - startTime) + " Requests/Second");
   }
 }

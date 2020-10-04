@@ -47,9 +47,9 @@ public class ThreadPhaseExecution implements Runnable {
 
     // Do numGet Get Calls:
     for (int i = 0; i < phaseExecutionParameter.getNumGet(); i++) {
-      int randomGetSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId()+ 1);
+      int randomGetSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId() + 1);
       try {
-        ApiResponse<SkierVertical> skierResponse = SkierApiUtils.callSkierApiGetWithParameters(skiersApi, parameters.resortId, String.valueOf(dayId), String.valueOf(randomGetSkierId));
+        ApiResponse<SkierVertical> skierResponse = SkierApiUtils.callSkierApiGetWithParameters(skiersApi, parameters.getResortId(), String.valueOf(dayId), String.valueOf(randomGetSkierId));
         if (skierResponse.getStatusCode() == 200)
           successCount.incrementCounter();
         else {
@@ -63,8 +63,8 @@ public class ThreadPhaseExecution implements Runnable {
       }
     }
     latch.countDown();
-    threadManager.globalCountSuccess.incrementCounterBy(this.successCount.counter);
-    threadManager.globalCountFail.incrementCounterBy(this.failCount.counter);
+    threadManager.getGlobalCountSuccess().incrementCounterBy(this.successCount.getCounter());
+    threadManager.getGlobalCountFail().incrementCounterBy(this.failCount.getCounter());
   }
 
   void executePostCall(SkiersApi skiersApi, LiftRide liftRide) {
@@ -72,7 +72,7 @@ public class ThreadPhaseExecution implements Runnable {
     client.setBasePath(parameters.getAddressPort());
 
     for (int i = 0; i < phaseExecutionParameter.getNumPost(); i++) {
-      int randomSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId()+ 1);
+      int randomSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId() + 1);
       int dayId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartTime(), phaseExecutionParameter.getEndTime() + 1);
       int randomLiftNum = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getNumLifts());
 
@@ -84,7 +84,6 @@ public class ThreadPhaseExecution implements Runnable {
         ApiResponse<Void> writeResponse = SkierApiUtils.callWriteNewLiftRide(skiersApi, liftRide);
         if (writeResponse.getStatusCode() == 201) {
           successCount.incrementCounter();
-          logger.info("Record successfully created!");
         } else {
           logger.error("The GET request failed with response code: " + writeResponse.getStatusCode());
           failCount.incrementCounter();
