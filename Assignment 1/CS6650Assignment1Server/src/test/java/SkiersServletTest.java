@@ -87,8 +87,67 @@ public class SkiersServletTest extends Mockito {
     new SkiersServlet().doPost(request, response);
 
     writer.flush(); // it may not have been flushed yet...
-    assertTrue(stringWriter.toString().contains("Records Created Successfully!"));
+    assertTrue(stringWriter.toString().contains("{\"message\":\"Records Created Successfully!\"}"));
    // assertEquals(response.getStatus(),201);
+  }
+
+  @Test
+  public void testServletPostNegativeIncorrectDataType() throws Exception {
+
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+
+    when(request.getPathInfo()).thenReturn("/liftrides");
+    when(request.getMethod()).thenReturn("POST");
+
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
+
+
+    String input = "{\n" +
+            "  \"resortID\": \"Mission Ridge\",\n" +
+            "  \"dayID\": 23,\n" +
+            "  \"skierID\": \"SkierId\",\n" +
+            "  \"time\": 217,\n" +
+            "  \"liftID\": 21\n" +
+            "}";
+    BufferedReader reader = new BufferedReader(new StringReader(input));
+    when(request.getReader()).thenReturn(reader);
+
+    new SkiersServlet().doPost(request, response);
+
+    writer.flush(); // it may not have been flushed yet...
+    assertTrue(stringWriter.toString().contains("{\"message\":\"Incorrect data provided in request!\"}"));
+  }
+
+  @Test
+  public void testServletPostNegativeMissingValue() throws Exception {
+
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+
+    when(request.getPathInfo()).thenReturn("/liftrides");
+    when(request.getMethod()).thenReturn("POST");
+
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
+
+
+    String input = "{\n" +
+            "  \"resortID\": \"Mission Ridge\",\n" +
+            "  \"dayID\": 23,\n" +
+            "  \"skierID\": 7889" +
+            "}";
+    BufferedReader reader = new BufferedReader(new StringReader(input));
+    when(request.getReader()).thenReturn(reader);
+
+    new SkiersServlet().doPost(request, response);
+
+    writer.flush(); // it may not have been flushed yet...
+    assertTrue(stringWriter.toString().contains("{\"message\":\"Complete data not provided!\"}"));
+    // assertEquals(response.getStatus(),201);
   }
 
   @Test

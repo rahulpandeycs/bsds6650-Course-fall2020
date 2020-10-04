@@ -74,7 +74,7 @@ public class ThreadPhaseExecution implements Runnable {
     for (int i = 0; i < phaseExecutionParameter.getNumPost(); i++) {
       int randomSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId() + 1);
       int dayId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartTime(), phaseExecutionParameter.getEndTime() + 1);
-      int randomLiftNum = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getNumLifts());
+      int randomLiftNum = ThreadLocalRandom.current().nextInt(1,phaseExecutionParameter.getNumLifts());
 
       liftRide.setSkierID(String.valueOf(randomSkierId));
       liftRide.setLiftID(String.valueOf(randomLiftNum));

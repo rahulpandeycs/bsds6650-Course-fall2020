@@ -59,7 +59,7 @@ public class ThreadManager implements Runnable {
     //Execute Phase 1
     try {
       PhaseExecutionParameter phase1ExecutionParameter  = new PhaseExecutionParameter(5,100,1,
-              parameters.getNumSkiers()*4/parameters.getMaxThreads(),0,90,parameters.getNumLifts(), parameters.getMaxThreads()/4);
+              parameters.getNumSkiers()*4/parameters.getMaxThreads(),1,90,parameters.getNumLifts(), parameters.getMaxThreads()/4);
       submitToThreadPhaseExecution(WORKER_THREAD_POOL, phase1ExecutionParameter, 1/10);
     } catch (InterruptedException e) {
       logger.error("Thread execution failed : " + e.getMessage() + "with reason : " + e.getCause());
@@ -97,7 +97,7 @@ public class ThreadManager implements Runnable {
     long endTime = System.currentTimeMillis();
 
     System.out.println("Number of successful requests sent : " + globalCountSuccess.getCounter());
-    System.out.println("Number of unsuccessful requests :" + globalCountFail.getCounter() + " ms");
+    System.out.println("Number of unsuccessful requests :" + globalCountFail.getCounter());
     System.out.println("The total run time (wall time) :" + (endTime - startTime) + " ms");
 
     int totalRequests = globalCountSuccess.getCounter() + globalCountFail.getCounter();

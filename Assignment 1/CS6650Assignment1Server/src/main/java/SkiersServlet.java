@@ -33,9 +33,13 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
       BufferedReader reader = request.getReader();
       requestBody = reader.lines().collect(Collectors.joining(System.lineSeparator()));
 
-      if (!validatePOSTRequestData(requestBody)) {
+      int result = validatePOSTRequestData(requestBody);
+      if (result < 0) {
         response.setStatus(HttpStatus.SC_BAD_REQUEST);
         message.setMessage("Complete data not provided!");
+      } else if (result == 0) {
+        response.setStatus(HttpStatus.SC_BAD_REQUEST);
+        message.setMessage("Incorrect data provided in request!");
       } else {
         message.setMessage("Records Created Successfully!");
         response.setStatus(HttpStatus.SC_CREATED);
@@ -76,7 +80,6 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
       out.println(jsonMessage);
     else
       out.println(this.gson.toJson(skierVertical));
-
   }
 
   int validateGetRequest(String URI) {
@@ -110,9 +113,20 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
     return true;
   }
 
-  boolean validatePOSTRequestData(String body) {
-    LiftRide liftRide = new Gson().fromJson(body, LiftRide.class);
-    return Objects.nonNull(liftRide.getSkierID()) && Objects.nonNull(liftRide.getDayID()) && Objects.nonNull(liftRide.getDayID()) &&
-            Objects.nonNull(liftRide.getResortID()) && Objects.nonNull(liftRide.getTime());
+  int validatePOSTRequestData(String body) {
+    LiftRide liftRide = null;
+
+    try {
+      liftRide = new Gson().fromJson(body, LiftRide.class);
+    } catch (Exception ex) {
+      return 0;
+    }
+
+    if (Objects.isNull(liftRide.getSkierID()) || Objects.isNull(liftRide.getDayID()) || Objects.isNull(liftRide.getDayID()) ||
+            Objects.isNull(liftRide.getResortID()) || Objects.isNull(liftRide.getTime()) || liftRide.getSkierID() == 0
+            || liftRide.getTime() == 0 || liftRide.getLiftID() == 0 || liftRide.getDayID() == 0 || liftRide.getResortID().equals("")) {
+      return -1;
+    }
+    return 1;
   }
 }

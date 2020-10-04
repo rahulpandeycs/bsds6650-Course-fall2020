@@ -85,7 +85,7 @@ public class ThreadPhaseExecution implements Callable<List<ExecutionResponseData
 
       int randomSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId()+ 1);
       int dayId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartTime(), phaseExecutionParameter.getEndTime() + 1);
-      int randomLiftNum = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getNumLifts());
+      int randomLiftNum = ThreadLocalRandom.current().nextInt(1,phaseExecutionParameter.getNumLifts());
 
       liftRide.setSkierID(String.valueOf(randomSkierId));
       liftRide.setLiftID(String.valueOf(randomLiftNum));
@@ -97,7 +97,7 @@ public class ThreadPhaseExecution implements Callable<List<ExecutionResponseData
           successCount.incrementCounter();
           logger.info("Record successfully created!");
         } else {
-          logger.error("The GET request failed with response code: " + writeResponse.getStatusCode());
+          logger.error("The POST request failed with response code: " + writeResponse.getStatusCode());
           failCount.incrementCounter();
         }
         this.responseDataList.add(new ExecutionResponseData(startTime,"POST", System.currentTimeMillis() - startTime, writeResponse.getStatusCode()));
