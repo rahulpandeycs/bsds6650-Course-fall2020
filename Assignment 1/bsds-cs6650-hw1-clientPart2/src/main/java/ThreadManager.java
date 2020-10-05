@@ -1,6 +1,7 @@
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -122,7 +123,10 @@ public class ThreadManager implements Runnable {
 
 
       System.out.println("Writing data to CSV");
-      URI uri = ClassLoader.getSystemResource(Constants.PERFORMANCE_METRICS_CSV).toURI();
+//      URI uri = ClassLoader.getSystemResource(Constants.PERFORMANCE_METRICS_CSV).toURI();
+
+      File csvFile = new File(Constants.PERFORMANCE_METRICS_CSV);
+      String uri = csvFile.getAbsoluteFile().getAbsolutePath();
       CommonUtils.writeCsvFromBean(Paths.get(uri), performanceMetrics.getExecutionResponseList());
       System.out.println("Successfully Completed, Results are stored at: " + Paths.get(uri));
     } catch (ExecutionException e) {

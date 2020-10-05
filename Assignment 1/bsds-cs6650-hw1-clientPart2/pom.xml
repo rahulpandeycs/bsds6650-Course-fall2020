@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.neu.cs6650.client1</groupId>
+  <groupId>com.neu.cs6650.client2</groupId>
   <artifactId>bsds-cs6650-hw1-clientPart2</artifactId>
   <packaging>jar</packaging>
   <name>bsds-cs6650-hw1-clientPart2</name>
