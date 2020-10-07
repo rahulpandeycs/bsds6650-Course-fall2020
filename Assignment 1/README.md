@@ -1,6 +1,7 @@
 # ASSIGNMENT 1
 (CS 6650 - Building Scalable Distributed Systems)
 Fall 2020
+Github: https://github.com/rahulpandeycs/bsds6650-Course-fall2020/tree/master/Assignment%201
 
 Code author
 -----------
