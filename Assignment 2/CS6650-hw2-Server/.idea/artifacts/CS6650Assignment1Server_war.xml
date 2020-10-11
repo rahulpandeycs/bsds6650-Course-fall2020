@@ -1,0 +1,6 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="CS6650Assignment1Server:war">
+    <output-path>$PROJECT_DIR$/out/artifacts/CS6650Assignment1Server_war</output-path>
+    <root id="archive" name="CS6650Assignment1Server_war.war" />
+  </artifact>
+</component>
