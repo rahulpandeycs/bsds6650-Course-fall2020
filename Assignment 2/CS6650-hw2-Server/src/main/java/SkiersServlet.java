@@ -12,6 +12,7 @@ import javax.servlet.annotation.WebServlet;
 
 import dao.LiftRideDao;
 import dao.SkierVerticalDao;
+import exception.SkierServerException;
 import model.LiftRide;
 import model.ResponseMsg;
 import model.SkierVertical;
@@ -57,11 +58,14 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
         response.setStatus(HttpStatus.SC_BAD_REQUEST);
         message.setMessage("Complete data not provided!");
       } else {
-        liftRideDao.saveLiftRide(liftRide);
-        //       SkierVerticalDao skierVerticalDao = new SkierVerticalDao();
-        skierVerticalDao.saveSkierVertical(new SkierVertical(liftRide.getResortID(), liftRide.getLiftID() * 10));
+        try {
+          liftRideDao.saveLiftRide(liftRide);
+          response.setStatus(HttpStatus.SC_CREATED);
+        } catch (SkierServerException e) {
+          response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+          message.setMessage("Server failed to process request, with reason " + e.getMessage());
+        }
 
-        response.setStatus(HttpStatus.SC_CREATED);
       }
     } else if ("PUT".equalsIgnoreCase(request.getMethod()) || "DELETE".equalsIgnoreCase(request.getMethod())) {
       response.setStatus(HttpStatus.SC_NOT_IMPLEMENTED);
@@ -81,6 +85,24 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
 
     String URI = request.getPathInfo();
     ResponseMsg message = new ResponseMsg("");
+
+    //If truncate database
+    if (URI.split("/").length == 2 && URI.split("/")[1].equals("truncate")) {
+      try {
+        liftRideDao.truncateLiftRide();
+        response.setStatus(HttpStatus.SC_OK);
+        response.setContentType("application/json");
+        PrintWriter out = response.getWriter();
+        response.setCharacterEncoding("UTF-8");
+        message.setMessage("LiftRide truncated successfully");
+        String jsonMessage = new Gson().toJson(message);
+        out.println(jsonMessage);
+        return;
+      } catch (SkierServerException e) {
+        response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        message.setMessage("Server failed to process request, with reason " + e.getMessage());
+      }
+    }
 
     int validatedResult = validateGetRequest(URI);
 
@@ -104,20 +126,33 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
     else {
       String outputJson = "";
       String[] urlSplit = URI.split("/");
+
       if (urlSplit.length > 3 && urlSplit.length == 6) {
         // Get the total vertical for the skier for the specified ski day
-        int skierID = Integer.parseInt(urlSplit[5]);
+        String skierID = urlSplit[5];
         String resortID = urlSplit[1];
-        int dayID = Integer.parseInt(urlSplit[3]);
-        SkierVertical skierVertical = skierVerticalDao.getSkierVertical(resortID);
-        outputJson = this.gson.toJson(skierVertical);
+        String dayID = urlSplit[3];
+        int totalVert = 0;
+        try {
+          totalVert = skierVerticalDao.getTotalVertByResortDaySkierID(resortID, Integer.valueOf(skierID), Integer.valueOf(dayID));
+          outputJson = this.gson.toJson(new SkierVertical(resortID, totalVert));
+        } catch (SkierServerException e) {
+          response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+          message.setMessage("Server failed to process request, with reason " + e.getMessage());
+        }
       } else if (urlSplit.length == 3) {
         // Get the total vertical for the skier the specified resort.
         String query = request.getQueryString();
         String skierID = urlSplit[1];
         String resortID = query.split("=")[1];
-        SkierVertical skierVertical = skierVerticalDao.getSkierVertical(resortID);
-        outputJson = this.gson.toJson(skierVertical);
+        int totalVert = 0;
+        try {
+          totalVert = skierVerticalDao.getTotalVertBySkierIdResortId(resortID, Integer.valueOf(skierID));
+          outputJson = this.gson.toJson(new SkierVertical(resortID, totalVert));
+        } catch (SkierServerException e) {
+          response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+          message.setMessage("Server failed to process request, with reason " + e.getMessage());
+        }
       }
 
       out.println(outputJson);
@@ -156,9 +191,11 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
   }
 
   int validatePOSTRequestData(LiftRide liftRideModel) {
-    if (Objects.isNull(liftRideModel.getSkierID()) || Objects.isNull(liftRideModel.getDayID()) || Objects.isNull(liftRideModel.getDayID()) ||
-            Objects.isNull(liftRideModel.getResortID()) || Objects.isNull(liftRideModel.getTime()) || liftRideModel.getSkierID() == 0
-            || liftRideModel.getTime() == 0 || liftRideModel.getLiftID() == 0 || liftRideModel.getDayID() == 0 || liftRideModel.getResortID().equals("")) {
+    if (Objects.isNull(liftRideModel.getSkierID()) || Objects.isNull(liftRideModel.getDayID())
+            || Objects.isNull(liftRideModel.getDayID()) || Objects.isNull(liftRideModel.getResortID())
+            || Objects.isNull(liftRideModel.getTime()) || Integer.valueOf(liftRideModel.getSkierID()) == 0
+            || Integer.valueOf(liftRideModel.getTime()) == 0 || Integer.valueOf(liftRideModel.getLiftID()) == 0
+            || Integer.valueOf(liftRideModel.getDayID()) == 0 || liftRideModel.getResortID().equals("")) {
       return -1;
     }
     return 1;

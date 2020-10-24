@@ -47,12 +47,27 @@ public class ThreadPhaseExecution implements Callable<List<ExecutionResponseData
     int dayId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartTime(), phaseExecutionParameter.getEndTime() + 1);
 
     //Create liftRide for write API
+    //  ResortID ="Mission Ridge", DayID ="23", SkierID="7889", Time="217", LiftID="21";
     LiftRide liftRide = SkierApiUtils.getSampleLiftRide();
+
+    //Execute Get call to get totalVerticalPerSkierDay
     executePostCall(skiersApi, liftRide);
+
+    //Execute Post call to create a Lift Ride.
+    executeGetCallTotalVertForSkiDay(skiersApi, dayId);
+    executeGetCallTotalVertForResort(skiersApi, dayId);
+
+    latch.countDown();
+    threadManager.getGlobalCountSuccess().incrementCounterBy(this.successCount.getCounter());
+    threadManager.getGlobalCountFail().incrementCounterBy(this.failCount.getCounter());
+    return this.responseDataList;
+  }
+
+  private void executeGetCallTotalVertForSkiDay(SkiersApi skiersApi, int dayId) {
 
     // Do numGet Get Calls:
     for (int i = 0; i < phaseExecutionParameter.getNumGet(); i++) {
-      int randomGetSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId()+ 1);
+      int randomGetSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId() + 1);
       long startTime = System.currentTimeMillis();
       try {
         ApiResponse<SkierVertical> skierResponse = SkierApiUtils.callSkierApiGetWithParameters(skiersApi, parameters.getResortId(), String.valueOf(dayId), String.valueOf(randomGetSkierId));
@@ -62,34 +77,93 @@ public class ThreadPhaseExecution implements Callable<List<ExecutionResponseData
           logger.error("The GET request failed with response code: " + skierResponse.getStatusCode());
           failCount.incrementCounter();
         }
-        this.responseDataList.add(new ExecutionResponseData(startTime,"GET", System.currentTimeMillis() - startTime, skierResponse.getStatusCode()));
+        this.responseDataList.add(new ExecutionResponseData(startTime, "GET", System.currentTimeMillis() - startTime, skierResponse.getStatusCode()));
       } catch (ApiException e) {
-        e.printStackTrace();
         logger.error("The get request to Resort API failed with error: " + e.getMessage() + "Reason being: " + e.getCause());
         failCount.incrementCounter();
-        this.responseDataList.add(new ExecutionResponseData(startTime,"GET", System.currentTimeMillis() - startTime, e.getCode()));
+        this.responseDataList.add(new ExecutionResponseData(startTime, "GET", System.currentTimeMillis() - startTime, e.getCode()));
       }
     }
-
-    latch.countDown();
-    threadManager.getGlobalCountSuccess().incrementCounterBy(this.successCount.getCounter());
-    threadManager.getGlobalCountFail().incrementCounterBy(this.failCount.getCounter());
-    return  this.responseDataList;
   }
 
-  void executePostCall(SkiersApi skiersApi, LiftRide liftRide) {
+
+  private void executeGetCallTotalVertForResort(SkiersApi skiersApi, int dayId) {
+    // Do numGet Get Calls:
+    for (int i = 0; i < phaseExecutionParameter.getNumGet(); i++) {
+      int randomGetSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId() + 1);
+      long startTime = System.currentTimeMillis();
+      try {
+        ApiResponse<SkierVertical> skierResponse = SkierApiUtils.callSkierResortTotalsWithOneParameters(skiersApi, String.valueOf(randomGetSkierId));
+        if (skierResponse.getStatusCode() == 200)
+          successCount.incrementCounter();
+        else {
+          logger.error("The GET request failed with response code: " + skierResponse.getStatusCode());
+          failCount.incrementCounter();
+        }
+        this.responseDataList.add(new ExecutionResponseData(startTime, "GET", System.currentTimeMillis() - startTime, skierResponse.getStatusCode()));
+      } catch (ApiException e) {
+        logger.error("The get request to Resort API failed with error: " + e.getMessage() + "Reason being: " + e.getCause());
+        failCount.incrementCounter();
+        this.responseDataList.add(new ExecutionResponseData(startTime, "GET", System.currentTimeMillis() - startTime, e.getCode()));
+      }
+    }
+  }
+
+
+//  private Function<Void, ApiResponse<SkierVertical>> getAPICallFunctionWithSkiDay(SkiersApi skiersApi) {
+//    Function<Void, ApiResponse<SkierVertical>> getCallWithSkiDay = new Function<Void, ApiResponse<SkierVertical>>() {
+//      ApiResponse<SkierVertical> response;
+//
+//      @Override
+//      public ApiResponse<SkierVertical> apply(Void inputResponseClass) {
+//        int randomGetSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId() + 1);
+//        try {
+//          response = SkierApiUtils.callSkierApiGetWithParameters(skiersApi, parameters.getResortId(), String.valueOf(dayId), String.valueOf(randomGetSkierId));
+//        } catch (ApiException e) {
+//          e.printStackTrace();
+//          logger.error("The get request to Resort API failed with error: " + e.getMessage() + "Reason being: " + e.getCause());
+//          failCount.incrementCounter();
+//          this.responseDataList.add(new ExecutionResponseData(startTime, "GET", System.currentTimeMillis() - startTime, e.getCode()));
+//        }
+//        return response;
+//      }
+//    };
+//    return getCallWithSkiDay;
+//  }
+
+//  private Function<Void, ApiResponse<SkierVertical>> getAPICallFunction(SkiersApi skiersApi) {
+//    Function<Void, ApiResponse<SkierVertical>> getCallWithSkiDay = new Function<Void, ApiResponse<SkierVertical>>() {
+//      ApiResponse<SkierVertical> response;
+//
+//      @Override
+//      public ApiResponse<SkierVertical> apply(Void inputResponseClass) {
+//        int randomGetSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId() + 1);
+//        try {
+//          response = SkierApiUtils.callSkierApiGetWithParameters(skiersApi, parameters.getResortId(), String.valueOf(dayId), String.valueOf(randomGetSkierId));
+//        } catch (ApiException e) {
+//          e.printStackTrace();
+//        }
+//        return response;
+//      }
+//    };
+//    return getCallWithSkiDay;
+//  }
+
+
+  private void executePostCall(SkiersApi skiersApi, LiftRide liftRide) {
     ApiClient client = skiersApi.getApiClient();
     client.setBasePath(parameters.getAddressPort());
 
     for (int i = 0; i < phaseExecutionParameter.getNumPost(); i++) {
 
-      int randomSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId()+ 1);
-      int dayId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartTime(), phaseExecutionParameter.getEndTime() + 1);
-      int randomLiftNum = ThreadLocalRandom.current().nextInt(1,phaseExecutionParameter.getNumLifts());
+      int randomSkierId = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartSkierId(), phaseExecutionParameter.getEndSkierId() + 1);
+      int randomTime = ThreadLocalRandom.current().nextInt(phaseExecutionParameter.getStartTime(), phaseExecutionParameter.getEndTime() + 1);
+      int randomLiftNum = ThreadLocalRandom.current().nextInt(1, phaseExecutionParameter.getNumLifts());
 
       liftRide.setSkierID(String.valueOf(randomSkierId));
       liftRide.setLiftID(String.valueOf(randomLiftNum));
-      liftRide.setTime(String.valueOf(dayId));
+      liftRide.setTime(String.valueOf(randomTime));
+
       long startTime = System.currentTimeMillis();
       try {
         ApiResponse<Void> writeResponse = SkierApiUtils.callWriteNewLiftRide(skiersApi, liftRide);
@@ -100,9 +174,9 @@ public class ThreadPhaseExecution implements Callable<List<ExecutionResponseData
           logger.error("The POST request failed with response code: " + writeResponse.getStatusCode());
           failCount.incrementCounter();
         }
-        this.responseDataList.add(new ExecutionResponseData(startTime,"POST", System.currentTimeMillis() - startTime, writeResponse.getStatusCode()));
+        this.responseDataList.add(new ExecutionResponseData(startTime, "POST", System.currentTimeMillis() - startTime, writeResponse.getStatusCode()));
       } catch (ApiException ex) {
-        this.responseDataList.add(new ExecutionResponseData(startTime,"POST", System.currentTimeMillis() - startTime, ex.getCode()));
+        this.responseDataList.add(new ExecutionResponseData(startTime, "POST", System.currentTimeMillis() - startTime, ex.getCode()));
         failCount.incrementCounter();
         logger.error("Creation of Lift failed : " + ex.getMessage() + " With reason: " + ex.getCause());
       }

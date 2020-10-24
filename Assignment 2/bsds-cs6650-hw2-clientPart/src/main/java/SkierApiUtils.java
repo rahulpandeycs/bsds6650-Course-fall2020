@@ -21,23 +21,23 @@ public class SkierApiUtils {
   }
 
   // /skiers/{skierID}/vertical
-  static SkierVertical callSkierResortTotalsWithOneParameters(SkiersApi apiInstance, String skierId) throws ApiException {
-    List<String> resort = Arrays.asList("resort_example");
+  static ApiResponse<SkierVertical> callSkierResortTotalsWithOneParameters(SkiersApi apiInstance, String skierId) throws ApiException {
+    List<String> resort = Arrays.asList("MissionRidge");
     ApiResponse<SkierVertical>  skierResortTotalsResponse = apiInstance.getSkierResortTotalsWithHttpInfo(skierId,resort);
-    return skierResortTotalsResponse.getData();
+    return skierResortTotalsResponse;
   }
 
-  // /skiers/{skierID}/vertical
+  // /skiers/liftrides
   public static ApiResponse<Void> callWriteNewLiftRide(SkiersApi apiInstance, LiftRide body) throws ApiException {
     List<String> resort = Arrays.asList("resort_example");
     ApiResponse<Void> response = apiInstance.writeNewLiftRideWithHttpInfo(body);
     return response;
   }
 
-  public static LiftRide getSampleLiftRide(){
+  public static LiftRide getSampleLiftRide() {
     final LiftRide liftRide = new LiftRide();
     liftRide.setResortID("Mission Ridge");
-    liftRide.setDayID("23");
+    liftRide.setDayID("1");
     liftRide.setSkierID("7889");
     liftRide.setTime("217");
     liftRide.setLiftID("21");

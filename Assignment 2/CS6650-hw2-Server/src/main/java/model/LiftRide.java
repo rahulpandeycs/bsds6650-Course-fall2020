@@ -5,30 +5,35 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "liftRide")
+@IdClass(SkierCompositeKey.class)
 public class LiftRide {
 
-  //Use @EmbeddedId for composite key relation
+  public LiftRide(){
+  }
+
   @Id
   @Column(name="skierID")
   int skierID;
 
-//  @Id
+  @Id
   @Column(name="resortID")
   String resortID;
 
+  @Id
   @Column(name="dayID")
   int dayID;
 
-  @Column(name="liftID")
-  int liftID;
-
+  @Id
   @Column(name="time")
   int time;
 
+  @Column(name="liftID")
+  int liftID;
 
   public LiftRide(String resortID, int dayID, int skierID, int time, int liftID) {
     this.resortID = resortID;
@@ -42,32 +47,21 @@ public class LiftRide {
     return resortID;
   }
 
-  public void setResortID(String resortID) {
-    this.resortID = resortID;
-  }
+//  public void setResortID(String resortID) {
+//    this.resortID = resortID;
+//  }
 
   public int getDayID() {
     return dayID;
-  }
-
-  public void setDayID(int dayID) {
-    this.dayID = dayID;
   }
 
   public int getSkierID() {
     return skierID;
   }
 
-  public void setSkierID(int skierID) {
-    this.skierID = skierID;
-  }
 
   public int getTime() {
     return time;
-  }
-
-  public void setTime(int time) {
-    this.time = time;
   }
 
   public int getLiftID() {

@@ -30,7 +30,6 @@ public class ExecutionResponseData implements Comparable<ExecutionResponseData> 
     return responseCode;
   }
 
-//TODO:
   @Override
   public int compareTo(ExecutionResponseData executionResponseData) {
     return (int) (this.latency - executionResponseData.latency);

@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -8,7 +9,7 @@ public class PerformanceMetrics {
 
   List<ExecutionResponseData> responseDataList;
 
-  public PerformanceMetrics(List<Future<List<ExecutionResponseData>>> futureResponseDataList) throws ExecutionException, InterruptedException {
+  public PerformanceMetrics(Collection<Future<List<ExecutionResponseData>>> futureResponseDataList) throws ExecutionException, InterruptedException {
     this.responseDataList = new ArrayList<>();
     for (Future<List<ExecutionResponseData>> futureDataList : futureResponseDataList) {
       this.responseDataList.addAll(futureDataList.get());

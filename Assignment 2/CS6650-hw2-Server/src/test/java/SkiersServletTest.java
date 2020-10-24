@@ -1,27 +1,13 @@
-import com.google.gson.Gson;
 import com.google.gson.JsonParser;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
 
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -47,8 +33,7 @@ public class SkiersServletTest extends Mockito {
 
     writer.flush(); // it may not have been flushed yet...
     JsonParser parser = new JsonParser();
-    assertEquals(parser.parse(stringWriter.toString()), parser.parse("{\"resortID\":\"MissionRidge\",\"totalVert\":220}"));
-    // assertEquals(response.getStatus(),200);
+    assertEquals(parser.parse(stringWriter.toString()), parser.parse("{\"resortID\":\"MissionRidge\",\"totalVert\":460}"));
   }
 
   @Test
@@ -56,7 +41,29 @@ public class SkiersServletTest extends Mockito {
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
 
-    when(request.getPathInfo()).thenReturn("/1/vertical");
+    when(request.getPathInfo()).thenReturn("/7887/vertical");
+    when(request.getQueryString()).thenReturn("resortID=MissionRidge");
+
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
+
+    SkiersServlet skierServlet = new SkiersServlet();
+    skierServlet.init();
+    skierServlet.doGet(request, response);
+
+    writer.flush(); // it may not have been flushed yet...
+    JsonParser parser = new JsonParser();
+    assertEquals(parser.parse(stringWriter.toString()), parser.parse("{\"resortID\":\"MissionRidge\",\"totalVert\":0}"));
+  }
+
+
+  @Test //TODO
+  public void testServletTruncateLiftRide() throws Exception {
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpServletResponse response = mock(HttpServletResponse.class);
+
+    when(request.getPathInfo()).thenReturn("truncate");
 
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
@@ -69,38 +76,7 @@ public class SkiersServletTest extends Mockito {
 
     writer.flush(); // it may not have been flushed yet...
     JsonParser parser = new JsonParser();
-    assertEquals(parser.parse(stringWriter.toString()), parser.parse("{\"resortID\":\"Mission Ridge\",\"totalVert\":56734}"));
-   // assertEquals(response.getStatus(),200);
-  }
-
-  @Test
-  public void testServletPost() throws Exception {
-
-    HttpServletRequest request = mock(HttpServletRequest.class);
-    HttpServletResponse response = mock(HttpServletResponse.class);
-
-    when(request.getPathInfo()).thenReturn("/liftrides");
-    when(request.getMethod()).thenReturn("POST");
-
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
-
-
-    String input = "{\n" +
-            "  \"resortID\": \"Mission Ridge\",\n" +
-            "  \"dayID\": 23,\n" +
-            "  \"skierID\": 7889,\n" +
-            "  \"time\": 217,\n" +
-            "  \"liftID\": 21\n" +
-            "}";
-    BufferedReader reader = new BufferedReader(new StringReader(input));
-    when(request.getReader()).thenReturn(reader);
-
-    new SkiersServlet().doPost(request, response);
-
-    writer.flush(); // it may not have been flushed yet...
-    assertTrue(stringWriter.toString().contains("{\"message\":\"Records Created Successfully!\"}"));
+    assertEquals(parser.parse(stringWriter.toString()), parser.parse(""));
   }
 
   @Test
@@ -117,11 +93,11 @@ public class SkiersServletTest extends Mockito {
     when(response.getWriter()).thenReturn(writer);
 
     String input = "{\n" +
-            "  \"resortID\": \"MissionRidge2\",\n" +
+            "  \"resortID\": \"MissionRidge\",\n" +
             "  \"dayID\": 23,\n" +
-            "  \"skierID\": 27889,\n" +
+            "  \"skierID\": 7887,\n" +
             "  \"time\": 217,\n" +
-            "  \"liftID\": 22\n" +
+            "  \"liftID\": 12\n" +
             "}";
     BufferedReader reader = new BufferedReader(new StringReader(input));
     when(request.getReader()).thenReturn(reader);
@@ -130,7 +106,7 @@ public class SkiersServletTest extends Mockito {
     skierServlet.doPost(request, response);
 
     writer.flush(); // it may not have been flushed yet...
-    assertTrue(stringWriter.toString().contains("{\"skierID\":7889,\"resortID\":\"MissionRidge\",\"dayID\":23,\"liftID\":22,\"time\":217}"));
+    assertTrue(stringWriter.toString().contains("{\"skierID\":7887,\"resortID\":\"MissionRidge\",\"dayID\":23,\"time\":217,\"liftID\":12}"));
   }
 
   @Test
@@ -207,7 +183,7 @@ public class SkiersServletTest extends Mockito {
     writer.flush(); // it may not have been flushed yet...
     JsonParser parser = new JsonParser();
     assertEquals(parser.parse(stringWriter.toString()), parser.parse("{\"message\":\"Data not found\"}"));
-   // assertEquals(response.getStatus(),404);
+    // assertEquals(response.getStatus(),404);
   }
 
 
@@ -227,7 +203,7 @@ public class SkiersServletTest extends Mockito {
     writer.flush(); // it may not have been flushed yet...
     JsonParser parser = new JsonParser();
     assertEquals(parser.parse(stringWriter.toString()), parser.parse("{\"message\":\"Data not found\"}"));
-   // assertEquals(response.getStatus(),404);
+    // assertEquals(response.getStatus(),404);
   }
 
   @Test
@@ -246,7 +222,7 @@ public class SkiersServletTest extends Mockito {
     writer.flush(); // it may not have been flushed yet...
     JsonParser parser = new JsonParser();
     assertEquals(parser.parse(stringWriter.toString()), parser.parse("{\"message\":\"Invalid inputs supplied for: /1/days/12/skiers/\"}"));
-  //  assertEquals(response.getStatus(),400);
+    //  assertEquals(response.getStatus(),400);
   }
 
 }

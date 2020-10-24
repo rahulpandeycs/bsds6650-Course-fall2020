@@ -69,8 +69,6 @@
             <artifactId>commons-dbcp</artifactId>
             <version>1.4</version>
         </dependency>
-
-
         <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-core -->
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -98,9 +96,5 @@
             <artifactId>httpclient</artifactId>
             <version>4.5.12</version>
         </dependency>
-
-
     </dependencies>
-
-
 </project>
