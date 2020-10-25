@@ -100,13 +100,15 @@ public class SkierVerticalDao {
 
     Transaction transaction = null;
     List<LiftRide> listOfLiftRides = null;
-
+    int totalVert = 0;
     try (Session session = ConnectionUtil.getSessionFactory(LiftRide.class).openSession()) {
       transaction = session.beginTransaction();
-      Query query = session.createQuery("from LiftRide where resortID = :resortId and skierID = :skierId");
-      query.setParameter("resortId",resortId);
-      query.setParameter("skierId",skierId);
-      listOfLiftRides = query.getResultList();
+      Query query = session.createQuery("select sum (liftID*10) from LiftRide where resortID = :resortId and skierID = :skierId");
+      query.setParameter("resortId", resortId);
+      query.setParameter("skierId", skierId);
+      Object queryResult = query.uniqueResult();
+      if (queryResult != null)
+        totalVert = (int) (long) queryResult;
       transaction.commit();
     } catch (Exception e) {
       if (transaction != null) {
@@ -115,7 +117,6 @@ public class SkierVerticalDao {
       System.out.println("The error has occurred");
       throw new SkierServerException("Skier Api failed to fetch data from database", e);
     }
-    int totalVert = listOfLiftRides.stream().mapToInt(ride -> ride.getLiftID()*10).sum();
     return totalVert;
   }
 
@@ -123,14 +124,16 @@ public class SkierVerticalDao {
 
     Transaction transaction = null;
     List<LiftRide> listOfLiftRides = null;
-
+    int totalVert = 0;
     try (Session session = ConnectionUtil.getSessionFactory(LiftRide.class).openSession()) {
       transaction = session.beginTransaction();
-      Query query = session.createQuery("from LiftRide where resortID = :resortId and skierID = :skierId and dayID = :dayId");
-      query.setParameter("resortId",resortId);
-      query.setParameter("skierId",skierID);
-      query.setParameter("dayId",DayId);
-      listOfLiftRides = query.getResultList();
+      Query query = session.createQuery("select sum(liftID*10) from LiftRide where resortID = :resortId and skierID = :skierId and dayID = :dayId");
+      query.setParameter("resortId", resortId);
+      query.setParameter("skierId", skierID);
+      query.setParameter("dayId", DayId);
+      Object queryResult = query.uniqueResult();
+      if (queryResult != null)
+        totalVert = (int) (long) queryResult;
       transaction.commit();
     } catch (Exception e) {
       if (transaction != null) {
@@ -139,7 +142,7 @@ public class SkierVerticalDao {
       System.out.println("The error has occurred");
       throw new SkierServerException("Skier Api failed to fetch data from database", e);
     }
-    int totalVert = listOfLiftRides.stream().mapToInt(ride -> ride.getLiftID()*10).sum();
+
     return totalVert;
   }
 }

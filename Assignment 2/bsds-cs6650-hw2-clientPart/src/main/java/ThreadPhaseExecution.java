@@ -81,7 +81,8 @@ public class ThreadPhaseExecution implements Callable<List<ExecutionResponseData
       } catch (ApiException e) {
         logger.error("The get request to Resort API failed with error: " + e.getMessage() + "Reason being: " + e.getCause());
         failCount.incrementCounter();
-        this.responseDataList.add(new ExecutionResponseData(startTime, "GET", System.currentTimeMillis() - startTime, e.getCode()));
+        this.responseDataList.add(new ExecutionResponseData(startTime, "GET: Reason -> " + e.getCause(), System.currentTimeMillis() - startTime, e.getCode()));
+        e.printStackTrace();
       }
     }
   }
@@ -104,7 +105,8 @@ public class ThreadPhaseExecution implements Callable<List<ExecutionResponseData
       } catch (ApiException e) {
         logger.error("The get request to Resort API failed with error: " + e.getMessage() + "Reason being: " + e.getCause());
         failCount.incrementCounter();
-        this.responseDataList.add(new ExecutionResponseData(startTime, "GET", System.currentTimeMillis() - startTime, e.getCode()));
+        this.responseDataList.add(new ExecutionResponseData(startTime, "GET : Reason = " + e.getCause(), System.currentTimeMillis() - startTime, e.getCode()));
+        e.printStackTrace();
       }
     }
   }
@@ -176,7 +178,8 @@ public class ThreadPhaseExecution implements Callable<List<ExecutionResponseData
         }
         this.responseDataList.add(new ExecutionResponseData(startTime, "POST", System.currentTimeMillis() - startTime, writeResponse.getStatusCode()));
       } catch (ApiException ex) {
-        this.responseDataList.add(new ExecutionResponseData(startTime, "POST", System.currentTimeMillis() - startTime, ex.getCode()));
+        ex.printStackTrace();
+        this.responseDataList.add(new ExecutionResponseData(startTime, "POST : Reason: " + ex.getCause(), System.currentTimeMillis() - startTime, ex.getCode()));
         failCount.incrementCounter();
         logger.error("Creation of Lift failed : " + ex.getMessage() + " With reason: " + ex.getCause());
       }

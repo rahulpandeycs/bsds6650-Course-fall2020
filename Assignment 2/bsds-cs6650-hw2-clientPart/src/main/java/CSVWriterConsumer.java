@@ -25,15 +25,13 @@ public class CSVWriterConsumer implements Runnable {
   @Override
   public void run() {
     try {
+      System.out.println("Entered into Consumer for writing file!");
       while (true) {
-        System.out.println("Entered into Consumer!");
         if (!blockingQueue.isEmpty()) {
           Future<List<ExecutionResponseData>> responseData = blockingQueue.take();
           boolean exitConsumer = writeDataToCSVAndExit(responseData.get(), path);
-          System.out.println("Data Appended, Results are stored at: " + path);
-
           if (exitConsumer) {
-            System.out.println("Exiting now!");
+            System.out.println("Exiting now: Data stored, Results are stored at: " + path);
             return;
           }
         }

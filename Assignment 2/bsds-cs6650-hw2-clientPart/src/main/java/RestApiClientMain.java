@@ -31,7 +31,7 @@ public class RestApiClientMain {
       InputStream input = null;
       if (args.length > 1 && args[0].equals("-f")) {
         propertiesFile = new java.io.File(args[1]);
-        System.out.println("Reading file: " + args[1]);
+        System.out.println("Reading file passed as input: " + args[1]);
         input = new java.io.FileInputStream(propertiesFile);
       } else {
         System.out.println("Reading default config.properties");

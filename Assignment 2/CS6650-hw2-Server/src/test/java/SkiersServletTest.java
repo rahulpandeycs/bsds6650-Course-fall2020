@@ -21,7 +21,7 @@ public class SkiersServletTest extends Mockito {
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
 
-    when(request.getPathInfo()).thenReturn("/MissionRidge/days/23/skiers/7889");
+    when(request.getPathInfo()).thenReturn("/MissionRidge/days/23/skiers/7887");
 
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
