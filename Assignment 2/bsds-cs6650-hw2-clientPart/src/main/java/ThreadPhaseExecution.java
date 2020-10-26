@@ -74,9 +74,9 @@ public class ThreadPhaseExecution implements Callable<List<ExecutionResponseData
         ApiResponse<SkierVertical> skierResponse = SkierApiUtils.callSkierApiGetWithParameters(skiersApi, parameters.getResortId(), String.valueOf(dayId), String.valueOf(randomGetSkierId));
         if (skierResponse.getStatusCode() == 200)
           successCount.incrementCounter();
-        else {
-          skierResponse = retry.errorOccurredInGetWithManyParameters(skiersApi,randomGetSkierId, String.valueOf(dayId), parameters.getResortId());
-          if(skierResponse.getStatusCode() == 200)
+        else { //TODO: Check if you can just throw exception and catch it in below block, remove redundant code.
+          skierResponse = retry.errorOccurredInGetWithManyParameters(skiersApi, randomGetSkierId, String.valueOf(dayId), parameters.getResortId());
+          if (skierResponse.getStatusCode() == 200)
             successCount.incrementCounter();
           else
             failCount.incrementCounter();
@@ -85,17 +85,17 @@ public class ThreadPhaseExecution implements Callable<List<ExecutionResponseData
       } catch (ApiException e) {
         ApiResponse<SkierVertical> skierResponse = null;
         try {
-          skierResponse = retry.errorOccurredInGetWithManyParameters(skiersApi,randomGetSkierId, String.valueOf(dayId), parameters.getResortId());
-          if(skierResponse.getStatusCode() == 200)
+          skierResponse = retry.errorOccurredInGetWithManyParameters(skiersApi, randomGetSkierId, String.valueOf(dayId), parameters.getResortId());
+          if (skierResponse.getStatusCode() == 200)
             successCount.incrementCounter();
           else
             failCount.incrementCounter();
-          this.responseDataList.add(new ExecutionResponseData(startTime, "GET" , System.currentTimeMillis() - startTime, skierResponse.getStatusCode()));
+          this.responseDataList.add(new ExecutionResponseData(startTime, "GET", System.currentTimeMillis() - startTime, skierResponse.getStatusCode()));
         } catch (ApiException apiException) {
-          e.printStackTrace();
           logger.error("The get request to Resort API failed with error: " + e.getMessage() + "Reason being: " + e.getCause());
           failCount.incrementCounter();
-          this.responseDataList.add(new ExecutionResponseData(startTime, "GET: Reason -> " + e.getCause(), System.currentTimeMillis() - startTime, e.getCode()));
+          this.responseDataList.add(new ExecutionResponseData(startTime, "GET", System.currentTimeMillis() - startTime, e.getCode()));
+          e.printStackTrace();
         }
       }
     }
@@ -112,26 +112,26 @@ public class ThreadPhaseExecution implements Callable<List<ExecutionResponseData
         if (skierResponse.getStatusCode() == 200)
           successCount.incrementCounter();
         else {
-          skierResponse = retry.errorOccurredInGet(skiersApi,randomGetSkierId);
-          if(skierResponse.getStatusCode() == 200)
+          skierResponse = retry.errorOccurredInGet(skiersApi, randomGetSkierId);
+          if (skierResponse.getStatusCode() == 200)
             successCount.incrementCounter();
           else
-          failCount.incrementCounter();
+            failCount.incrementCounter();
         }
         this.responseDataList.add(new ExecutionResponseData(startTime, "GET", System.currentTimeMillis() - startTime, skierResponse.getStatusCode()));
       } catch (ApiException e) {
         try {
-          ApiResponse<SkierVertical> skierResponse = retry.errorOccurredInGet(skiersApi,randomGetSkierId);
-          if(skierResponse.getStatusCode() == 200)
+          ApiResponse<SkierVertical> skierResponse = retry.errorOccurredInGet(skiersApi, randomGetSkierId);
+          if (skierResponse.getStatusCode() == 200)
             successCount.incrementCounter();
           else
             failCount.incrementCounter();
-          this.responseDataList.add(new ExecutionResponseData(startTime, "GET" , System.currentTimeMillis() - startTime, skierResponse.getStatusCode()));
+          this.responseDataList.add(new ExecutionResponseData(startTime, "GET", System.currentTimeMillis() - startTime, skierResponse.getStatusCode()));
         } catch (ApiException apiException) {
-          e.printStackTrace();
           logger.error("The get request to Resort API failed with error: " + e.getMessage() + "Reason being: " + e.getCause());
           failCount.incrementCounter();
           this.responseDataList.add(new ExecutionResponseData(startTime, "GET", System.currentTimeMillis() - startTime, e.getCode()));
+          e.printStackTrace();
         }
       }
     }
@@ -157,11 +157,11 @@ public class ThreadPhaseExecution implements Callable<List<ExecutionResponseData
         if (writeResponse.getStatusCode() == 201) {
           successCount.incrementCounter();
         } else {
-            writeResponse = retry.errorOccurredInPost(skiersApi, liftRide);
-            if (writeResponse.getStatusCode() == 201)
-              successCount.incrementCounter();
-            else
-              failCount.incrementCounter();
+          writeResponse = retry.errorOccurredInPost(skiersApi, liftRide);
+          if (writeResponse.getStatusCode() == 201)
+            successCount.incrementCounter();
+          else
+            failCount.incrementCounter();
         }
         this.responseDataList.add(new ExecutionResponseData(startTime, "POST", System.currentTimeMillis() - startTime, writeResponse.getStatusCode()));
       } catch (ApiException ex) {
@@ -169,15 +169,14 @@ public class ThreadPhaseExecution implements Callable<List<ExecutionResponseData
           ApiResponse<Void> retryWriteResponse = retry.errorOccurredInPost(skiersApi, liftRide); //TODO: Add response to success list
           if (retryWriteResponse.getStatusCode() == 201) {
             successCount.incrementCounter();
-            System.out.println("Successfully executed call with API retry");
           } else
             failCount.incrementCounter();
           this.responseDataList.add(new ExecutionResponseData(startTime, "POST", System.currentTimeMillis() - startTime, retryWriteResponse.getStatusCode()));
         } catch (ApiException e) {
-          ex.printStackTrace();
           this.responseDataList.add(new ExecutionResponseData(startTime, "POST", System.currentTimeMillis() - startTime, ex.getCode()));
           failCount.incrementCounter();
           logger.error("Creation of Lift failed : " + ex.getMessage() + " With reason: " + ex.getCause());
+          ex.printStackTrace();
         }
       }
     }
