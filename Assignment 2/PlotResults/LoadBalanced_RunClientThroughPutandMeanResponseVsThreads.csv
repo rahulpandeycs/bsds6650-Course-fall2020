@@ -1,0 +1,6 @@
+Number Of threads,Throughput,Mean Response time
+32,1818,24
+64,1914,94
+128,2040,85
+256,2022,175
+512,1366,522
