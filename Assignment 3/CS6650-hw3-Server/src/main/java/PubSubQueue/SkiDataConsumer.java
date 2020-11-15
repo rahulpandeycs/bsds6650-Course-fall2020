@@ -8,6 +8,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,12 +56,14 @@ public class SkiDataConsumer {
             try {
               liftRideDao.saveLiftRide(liftRide);
             } catch (SkierServerException e) {
+              Logger.getLogger(SkiDataConsumer.class.getName()).log(Level.SEVERE, "Retry will be attempted", e);
               int retryCount = 2;
               try {
                 Thread.sleep(1000);
                 retryCount--;
                 retrySaveToDB(liftRide);
               } catch (SkierServerException | InterruptedException skierServerException) {
+                Logger.getLogger(SkiDataConsumer.class.getName()).log(Level.SEVERE, "Retry will be attempted, count: " + retryCount, e);
                 if (retryCount > 0) {
                   retryCount--;
                   try {
@@ -73,6 +76,7 @@ public class SkiDataConsumer {
                 }
                 skierServerException.printStackTrace();
               }
+              Logger.getLogger(SkiDataConsumer.class.getName()).log(Level.SEVERE, "No Retry remains", e);
               e.printStackTrace();
             }
             System.out.println("Data saved to DB:" + liftRide.toString());
@@ -81,6 +85,7 @@ public class SkiDataConsumer {
           // process messages
           channel.basicConsume(QUEUE_NAME, false, deliverCallback, consumerTag -> {
           });
+//          channel.close();
         } catch (IOException ex) {
           Logger.getLogger(SkiDataConsumer.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -88,11 +93,10 @@ public class SkiDataConsumer {
     };
 
     // start threads and block to receive messages
-    for (int i = 0; i < 10; i++) {
+//    for (int i = 0; i < 2; i++) {
       new Thread(runnable).start();
-    }
+//    }
   }
-
 
   private static void retrySaveToDB(LiftRide liftRide) throws SkierServerException {
     liftRideDao.saveLiftRide(liftRide);
