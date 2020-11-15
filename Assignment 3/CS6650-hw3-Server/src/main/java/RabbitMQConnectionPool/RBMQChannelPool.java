@@ -12,12 +12,12 @@ import exception.RBMQChannelException;
 
 public class RBMQChannelPool implements Cloneable {
 
-  private GenericObjectPool<Channel> internalPool;
+  private static GenericObjectPool<Channel> internalPool;
   public static GenericObjectPoolConfig defaultConfig;
 
   static {
     defaultConfig = new GenericObjectPoolConfig();
-    defaultConfig.setMaxTotal(20);
+    defaultConfig.setMaxTotal(25);
     defaultConfig.setBlockWhenExhausted(false);
   }
 
@@ -32,7 +32,6 @@ public class RBMQChannelPool implements Cloneable {
       } catch (Exception e) {
       }
     }
-
     this.internalPool = new GenericObjectPool<Channel>(factory, poolConfig);
   }
 

@@ -1,20 +1,27 @@
 import com.google.gson.Gson;
 
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.http.HttpStatus;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import javax.servlet.annotation.WebServlet;
 
-import PubSubQueue.SkiDataConsumer;
 import PubSubQueue.SkiDataPublisher;
+import RabbitMQConnectionPool.RBMQChannelFactory;
+import RabbitMQConnectionPool.RBMQChannelUtil;
+import RabbitMQConnectionPool.RBMQConnectionFactory;
+import RabbitMQConnectionPool.RBMQConnectionUtil;
 import dao.LiftRideDao;
 import dao.SkierVerticalDao;
 import exception.SkierServerException;
@@ -29,12 +36,31 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
   private static final long serialVersionUID = 1L;
   private LiftRideDao liftRideDao;
   private SkierVerticalDao skierVerticalDao;
-  private ExecutorService executorService;
+ // private RBMQConnectionUtil rbmqConnectionUtil;
+  public static GenericObjectPoolConfig defaultConfig;
+  private Connection connection;
+
+  static {
+    defaultConfig = new GenericObjectPoolConfig();
+    defaultConfig.setMaxTotal(500);
+    defaultConfig.setMinIdle(2);
+    defaultConfig.setMaxIdle(5);
+    defaultConfig.setBlockWhenExhausted(false);
+  }
 
   public void init() {
     liftRideDao = new LiftRideDao();
     skierVerticalDao = new SkierVerticalDao();
-    executorService = Executors.newCachedThreadPool();
+    ConnectionFactory factory = new ConnectionFactory();
+    try {
+      connection = factory.newConnection();
+    } catch (IOException exception) {
+      exception.printStackTrace();
+    } catch (TimeoutException e) {
+      e.printStackTrace();
+    }
+//    rbmqConnectionUtil = new RBMQConnectionUtil(new GenericObjectPool<Connection>(new RBMQConnectionFactory(),defaultConfig));
+
   }
 
   protected void doPost(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
@@ -65,26 +91,13 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
         response.setStatus(HttpStatus.SC_BAD_REQUEST);
         message.setMessage("Complete data not provided!");
       } else {
-//        try {
-//          liftRideDao.saveLiftRide(liftRide);
-//        executorService.submit(new SkiDataPublisher(liftRide));
-//        try {
-//          executorService.awaitTermination(60, TimeUnit.SECONDS);
-//        } catch (InterruptedException exception) {
-//          exception.printStackTrace();
-//        }
-        Thread publisherThread = new Thread(new SkiDataPublisher(liftRide));
-        publisherThread.start();
         try {
-          publisherThread.join();
-        } catch (InterruptedException exception) {
-          exception.printStackTrace();
+          new SkiDataPublisher(liftRide,connection).doPublish();
+        } catch (TimeoutException e) {
+          response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+          message.setMessage("Server failed to process request, with reason " + e.getMessage());
         }
         response.setStatus(HttpStatus.SC_CREATED);
-//        } catch (SkierServerException e) {
-//          response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
-//          message.setMessage("Server failed to process request, with reason " + e.getMessage());
-//        }
       }
     } else if ("PUT".equalsIgnoreCase(request.getMethod()) || "DELETE".equalsIgnoreCase(request.getMethod())) {
       response.setStatus(HttpStatus.SC_NOT_IMPLEMENTED);
