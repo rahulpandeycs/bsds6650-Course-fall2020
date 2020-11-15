@@ -1,0 +1,18 @@
+[ec2-user@ip-172-31-89-98 bsds_assignment2]$ java -jar bsds-cs6650-hw2-clientPart.jar -f config.properties
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+Reading file passed as input: config.properties
+Entered into Job execution producer!
+Entered into Consumer for writing file!
+Exiting now: Data stored, Results are stored at: /usr/bsds_assignment2/performance_metrics.csv
+Control came back to main
+Number of failed requests: 0
+Number of Successful requests: 194240
+Mean responseTime:216 ms
+Median responseTime:129 ms
+The total run time (wall time) :230084 ms
+Total Requests: 194240
+Throughput: 844 requests/sec
+p99 (99th percentile) response time :1307 ms
+Max response time:10063 ms

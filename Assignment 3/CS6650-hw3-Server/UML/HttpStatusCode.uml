@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>model.HttpStatusCode</OriginalElement>
+  <nodes>
+    <node x="124.00000000000003" y="0.0">javax.servlet.ServletConfig</node>
+    <node x="132.00000000000006" y="162.0">javax.servlet.http.HttpServlet</node>
+    <node x="582.7096247960849" y="632.5464926590538">model.SkiDayDetails</node>
+    <node x="140.0" y="319.0">org.mockito.Matchers</node>
+    <node x="0.0" y="0.0">javax.servlet.Servlet</node>
+    <node x="157.0" y="633.0">model.Skiers</node>
+    <node x="298.0" y="633.0">model.TopTen</node>
+    <node x="0.0" y="633.0">model.LiftRide</node>
+    <node x="542.1818181818182" y="243.0">ResortsServlet</node>
+    <node x="296.0" y="0.0">java.io.Serializable</node>
+    <node x="128.00000000000006" y="243.0">SkiersServlet</node>
+    <node x="566.1818181818182" y="162.0">javax.servlet.annotation.WebServlet</node>
+    <node x="144.0" y="400.0">org.mockito.Mockito</node>
+    <node x="386.1818181818182" y="162.0">model.HttpStatusCode</node>
+    <node x="204.0" y="481.0">ResortsServletTest</node>
+    <node x="426.1818181818182" y="81.0">java.lang.Enum</node>
+    <node x="120.00000000000006" y="81.0">javax.servlet.GenericServlet</node>
+    <node x="197.0" y="557.0">model.SeasonsList</node>
+    <node x="460.0" y="0.0">java.lang.Comparable</node>
+    <node x="0.0" y="481.0">SkiersServletTest</node>
+    <node x="449.042414355628" y="622.9575856443719">model.Resort</node>
+    <node x="378.0" y="557.0">model.ResortsList</node>
+    <node x="0.0" y="557.0">model.SkierVertical</node>
+    <node x="559.0" y="557.0">model.ResponseMsg</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="ResortsServlet" target="javax.servlet.http.HttpServlet">
+      <point x="-40.0" y="-15.5" />
+      <point x="582.1818181818182" y="213.0" />
+      <point x="234.00000000000006" y="213.0" />
+      <point x="34.0" y="15.5" />
+    </edge>
+    <edge source="java.lang.Enum" target="java.lang.Comparable">
+      <point x="20.0" y="-15.5" />
+      <point x="486.1818181818182" y="56.0" />
+      <point x="524.0" y="56.0" />
+      <point x="0.0" y="15.5" />
+    </edge>
+    <edge source="SkiersServlet" target="javax.servlet.http.HttpServlet">
+      <point x="-38.0" y="-15.5" />
+      <point x="-34.0" y="15.5" />
+    </edge>
+    <edge source="ResortsServletTest" target="org.mockito.Mockito">
+      <point x="0.0" y="-15.5" />
+      <point x="300.0" y="456.0" />
+      <point x="222.0" y="456.0" />
+      <point x="26.0" y="15.5" />
+    </edge>
+    <edge source="ResortsServlet" target="javax.servlet.annotation.WebServlet">
+      <point x="40.0" y="-15.5" />
+      <point x="32.0" y="15.5" />
+    </edge>
+    <edge source="javax.servlet.GenericServlet" target="java.io.Serializable">
+      <point x="53.333333333333286" y="-15.5" />
+      <point x="253.33333333333334" y="56.0" />
+      <point x="332.0" y="56.0" />
+      <point x="-36.0" y="15.5" />
+    </edge>
+    <edge source="java.lang.Enum" target="java.io.Serializable">
+      <point x="-20.0" y="-15.5" />
+      <point x="446.1818181818182" y="56.0" />
+      <point x="404.0" y="56.0" />
+      <point x="36.0" y="15.5" />
+    </edge>
+    <edge source="SkiersServlet" target="javax.servlet.annotation.WebServlet">
+      <point x="38.0" y="-15.5" />
+      <point x="242.00000000000006" y="223.0" />
+      <point x="598.1818181818182" y="223.0" />
+      <point x="-32.0" y="15.5" />
+    </edge>
+    <edge source="javax.servlet.http.HttpServlet" target="javax.servlet.GenericServlet">
+      <point x="0.0" y="-15.5" />
+      <point x="0.0" y="15.5" />
+    </edge>
+    <edge source="org.mockito.Mockito" target="org.mockito.Matchers">
+      <point x="0.0" y="-15.5" />
+      <point x="0.0" y="15.5" />
+    </edge>
+    <edge source="javax.servlet.GenericServlet" target="javax.servlet.ServletConfig">
+      <point x="-2.8421709430404007E-14" y="-15.5" />
+      <point x="0.0" y="15.5" />
+    </edge>
+    <edge source="SkiersServletTest" target="org.mockito.Mockito">
+      <point x="0.0" y="-15.5" />
+      <point x="92.0" y="456.0" />
+      <point x="170.0" y="456.0" />
+      <point x="-26.0" y="15.5" />
+    </edge>
+    <edge source="javax.servlet.GenericServlet" target="javax.servlet.Servlet">
+      <point x="-53.33333333333337" y="-15.5" />
+      <point x="146.66666666666669" y="56.0" />
+      <point x="52.0" y="56.0" />
+      <point x="0.0" y="15.5" />
+    </edge>
+    <edge source="model.HttpStatusCode" target="java.lang.Enum">
+      <point x="0.0" y="-15.5" />
+      <point x="0.0" y="15.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.7961988304093568" x="351.5" y="331.99999999999994" />
+  <SelectedNodes>
+    <node>javax.servlet.GenericServlet</node>
+  </SelectedNodes>
+  <Categories />
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
