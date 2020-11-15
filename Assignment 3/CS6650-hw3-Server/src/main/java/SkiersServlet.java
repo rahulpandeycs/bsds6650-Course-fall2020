@@ -6,10 +6,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.servlet.annotation.WebServlet;
 
+import PubSubQueue.SkiDataConsumer;
+import PubSubQueue.SkiDataPublisher;
 import dao.LiftRideDao;
 import dao.SkierVerticalDao;
 import exception.SkierServerException;
@@ -24,10 +29,12 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
   private static final long serialVersionUID = 1L;
   private LiftRideDao liftRideDao;
   private SkierVerticalDao skierVerticalDao;
+  private ExecutorService executorService;
 
   public void init() {
     liftRideDao = new LiftRideDao();
     skierVerticalDao = new SkierVerticalDao();
+    executorService = Executors.newCachedThreadPool();
   }
 
   protected void doPost(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
@@ -58,14 +65,26 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
         response.setStatus(HttpStatus.SC_BAD_REQUEST);
         message.setMessage("Complete data not provided!");
       } else {
+//        try {
+//          liftRideDao.saveLiftRide(liftRide);
+//        executorService.submit(new SkiDataPublisher(liftRide));
+//        try {
+//          executorService.awaitTermination(60, TimeUnit.SECONDS);
+//        } catch (InterruptedException exception) {
+//          exception.printStackTrace();
+//        }
+        Thread publisherThread = new Thread(new SkiDataPublisher(liftRide));
+        publisherThread.start();
         try {
-          liftRideDao.saveLiftRide(liftRide);
-          response.setStatus(HttpStatus.SC_CREATED);
-        } catch (SkierServerException e) {
-          response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
-          message.setMessage("Server failed to process request, with reason " + e.getMessage());
+          publisherThread.join();
+        } catch (InterruptedException exception) {
+          exception.printStackTrace();
         }
-
+        response.setStatus(HttpStatus.SC_CREATED);
+//        } catch (SkierServerException e) {
+//          response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+//          message.setMessage("Server failed to process request, with reason " + e.getMessage());
+//        }
       }
     } else if ("PUT".equalsIgnoreCase(request.getMethod()) || "DELETE".equalsIgnoreCase(request.getMethod())) {
       response.setStatus(HttpStatus.SC_NOT_IMPLEMENTED);

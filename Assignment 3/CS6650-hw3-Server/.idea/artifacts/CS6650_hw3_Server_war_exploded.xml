@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
-  <artifact type="exploded-war" name="CS6650-hw2-Server:war exploded">
-    <output-path>$PROJECT_DIR$/out/artifacts/CS6650_hw2_Server_war_exploded</output-path>
+  <artifact type="exploded-war" name="CS6650-hw3-Server:war exploded">
+    <output-path>$PROJECT_DIR$/out/artifacts/CS6650_hw3_Server_war_exploded</output-path>
     <root id="root">
       <element id="directory" name="WEB-INF">
         <element id="directory" name="classes">

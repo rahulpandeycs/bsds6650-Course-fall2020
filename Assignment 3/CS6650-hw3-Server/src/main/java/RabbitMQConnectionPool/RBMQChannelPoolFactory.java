@@ -27,7 +27,7 @@ public class RBMQChannelPoolFactory implements PooledObjectFactory<Channel> {
       }
       connection = factory.newConnection();
     } catch (Exception e) {
-      throw new RBMQChannelException("Exception occured", e);
+      throw new RBMQChannelException("Exception Occurred", e);
     }
   }
 
