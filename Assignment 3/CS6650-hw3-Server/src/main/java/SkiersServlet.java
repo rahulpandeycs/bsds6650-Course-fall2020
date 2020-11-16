@@ -40,7 +40,7 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
 
   final static JedisPoolConfig poolConfig = buildPoolConfig();
   static JedisPool jedisPool;
-  private Jedis jedis;
+//  private Jedis jedis;
 
   static {
     defaultConfig = new GenericObjectPoolConfig();
@@ -49,7 +49,6 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
     defaultConfig.setMaxIdle(5);
     defaultConfig.setBlockWhenExhausted(false);
   }
-
 
 
   private static JedisPoolConfig buildPoolConfig() {
@@ -70,8 +69,8 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
   public void init() {
     this.liftRideDao = new LiftRideDao();
     this.skierVerticalDao = new SkierVerticalDao();
-    this.jedisPool = new JedisPool(poolConfig, "localhost",6379,1800);
-    this.jedis = jedisPool.getResource();
+    this.jedisPool = new JedisPool(poolConfig, "localhost", 6379, 4000);
+//    this.jedis = jedisPool.getResource();
 
 //    this.jedis = new Jedis("localhost", 6379, 1800);
 //    this.jedis = new Jedis("localhost");
@@ -186,52 +185,56 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
     else {
       String outputJson = "";
       String[] urlSplit = URI.split("/");
-
-      if (urlSplit.length > 3 && urlSplit.length == 6) {
-        // Get the total vertical for the skier for the specified ski day
-        String skierID = urlSplit[5];
-        String resortID = urlSplit[1];
-        String dayID = urlSplit[3];
-        int totalVert = 0;
-        try {jedis.isConnected();
-          jedis.connect();
-          String recordKey = getResortDaySkierIDRedisKey(resortID, skierID, dayID);
-          if (jedis.get(recordKey) != null) { //Get from the cache
-            totalVert = Integer.valueOf(jedis.get(recordKey));
-            System.out.println("GET Served from cache");
-          } else {
-            totalVert = skierVerticalDao.getTotalVertByResortDaySkierID(resortID, Integer.valueOf(skierID), Integer.valueOf(dayID));
-            jedis.set(recordKey, String.valueOf(totalVert));
-            System.out.println("GET Saved to cache");
+      try (Jedis jedis = jedisPool.getResource()) {
+        if (urlSplit.length > 3 && urlSplit.length == 6) {
+          // Get the total vertical for the skier for the specified ski day
+          String skierID = urlSplit[5];
+          String resortID = urlSplit[1];
+          String dayID = urlSplit[3];
+          int totalVert = 0;
+          try {
+            jedis.isConnected();
+            jedis.connect();
+            String recordKey = getResortDaySkierIDRedisKey(resortID, skierID, dayID);
+            if (jedis.get(recordKey) != null) { //Get from the cache
+              totalVert = Integer.valueOf(jedis.get(recordKey));
+              System.out.println("GET Served from cache");
+            } else {
+              totalVert = skierVerticalDao.getTotalVertByResortDaySkierID(resortID, Integer.valueOf(skierID), Integer.valueOf(dayID));
+              jedis.set(recordKey, String.valueOf(totalVert));
+              System.out.println("GET Saved to cache");
+            }
+            outputJson = this.gson.toJson(new SkierVertical(resortID, totalVert));
+          } catch (SkierServerException e) {
+            response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+            message.setMessage("Server failed to process request, with reason " + e.getMessage());
           }
-          outputJson = this.gson.toJson(new SkierVertical(resortID, totalVert));
-        } catch (SkierServerException e) {
-          response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
-          message.setMessage("Server failed to process request, with reason " + e.getMessage());
-        }
-      } else if (urlSplit.length == 3) {
-        // Get the total vertical for the skier the specified resort.
-        String query = request.getQueryString();
-        String skierID = urlSplit[1];
-        String resortID = query.split("=")[1];
-        int totalVert = 0;
-        try {
-          String recordKey = getSkierIdResortIdRedisKey(resortID, skierID);
-          if (jedis.get(recordKey) != null) {
-            totalVert = Integer.valueOf(jedis.get(recordKey));
-            System.out.println("GET Served from cache");
-          } else {
-            totalVert = skierVerticalDao.getTotalVertBySkierIdResortId(resortID, Integer.valueOf(skierID));
-            jedis.set(recordKey, String.valueOf(totalVert));
-            System.out.println("GET Saved to the cache");
+        } else if (urlSplit.length == 3) {
+          // Get the total vertical for the skier the specified resort.
+          String query = request.getQueryString();
+          String skierID = urlSplit[1];
+          String resortID = query.split("=")[1];
+          int totalVert = 0;
+          try {
+            String recordKey = getSkierIdResortIdRedisKey(resortID, skierID);
+            if (jedis.get(recordKey) != null) {
+              totalVert = Integer.valueOf(jedis.get(recordKey));
+              System.out.println("GET Served from cache");
+            } else {
+              totalVert = skierVerticalDao.getTotalVertBySkierIdResortId(resortID, Integer.valueOf(skierID));
+              jedis.set(recordKey, String.valueOf(totalVert));
+              System.out.println("GET Saved to the cache");
+            }
+            outputJson = this.gson.toJson(new SkierVertical(resortID, totalVert));
+          } catch (SkierServerException e) {
+            response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+            message.setMessage("Server failed to process request, with reason " + e.getMessage());
           }
-          outputJson = this.gson.toJson(new SkierVertical(resortID, totalVert));
-        } catch (SkierServerException e) {
-          response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
-          message.setMessage("Server failed to process request, with reason " + e.getMessage());
         }
+      } catch (Exception e) {
+        System.out.println("Jedis connection failed!");
+        e.printStackTrace();
       }
-
       out.println(outputJson);
     }
   }
