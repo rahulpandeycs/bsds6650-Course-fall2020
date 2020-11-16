@@ -11,6 +11,8 @@ import java.io.StringWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import redis.clients.jedis.Jedis;
+
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
@@ -223,6 +225,17 @@ public class SkiersServletTest extends Mockito {
     JsonParser parser = new JsonParser();
     assertEquals(parser.parse(stringWriter.toString()), parser.parse("{\"message\":\"Invalid inputs supplied for: /1/days/12/skiers/\"}"));
     //  assertEquals(response.getStatus(),400);
+  }
+
+  @Test
+  public void testRedisCache() throws Exception {
+     Jedis jedis = new Jedis();
+     jedis.set("events/city/rome", "32,15,223,828");
+
+    if(jedis.exists("events/city/rome")){
+      String cachedResponse = jedis.get("events/city/rome");
+      System.out.println(cachedResponse);
+    }
   }
 
 }

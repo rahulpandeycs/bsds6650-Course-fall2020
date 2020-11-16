@@ -1,10 +1,8 @@
 import com.google.gson.Gson;
 
-import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
-import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.http.HttpStatus;
 
@@ -18,16 +16,13 @@ import java.util.stream.Collectors;
 import javax.servlet.annotation.WebServlet;
 
 import PubSubQueue.SkiDataPublisher;
-import RabbitMQConnectionPool.RBMQChannelFactory;
-import RabbitMQConnectionPool.RBMQChannelUtil;
-import RabbitMQConnectionPool.RBMQConnectionFactory;
-import RabbitMQConnectionPool.RBMQConnectionUtil;
 import dao.LiftRideDao;
 import dao.SkierVerticalDao;
 import exception.SkierServerException;
 import model.LiftRide;
 import model.ResponseMsg;
 import model.SkierVertical;
+import redis.clients.jedis.Jedis;
 
 @WebServlet(name = "SkierServlet")
 public class SkiersServlet extends javax.servlet.http.HttpServlet {
@@ -36,9 +31,10 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
   private static final long serialVersionUID = 1L;
   private LiftRideDao liftRideDao;
   private SkierVerticalDao skierVerticalDao;
- // private RBMQConnectionUtil rbmqConnectionUtil;
+  // private RBMQConnectionUtil rbmqConnectionUtil;
   public static GenericObjectPoolConfig defaultConfig;
   private Connection connection;
+  private Jedis jedis;
 
   static {
     defaultConfig = new GenericObjectPoolConfig();
@@ -51,6 +47,9 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
   public void init() {
     liftRideDao = new LiftRideDao();
     skierVerticalDao = new SkierVerticalDao();
+    this.jedis = new Jedis();
+
+    //Creating connection factory to be used
     ConnectionFactory factory = new ConnectionFactory();
     try {
       connection = factory.newConnection();
@@ -92,7 +91,7 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
         message.setMessage("Complete data not provided!");
       } else {
         try {
-          new SkiDataPublisher(liftRide,connection).doPublish();
+          new SkiDataPublisher(liftRide, connection).doPublish();
         } catch (TimeoutException e) {
           response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
           message.setMessage("Server failed to process request, with reason " + e.getMessage());
@@ -166,7 +165,13 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
         String dayID = urlSplit[3];
         int totalVert = 0;
         try {
-          totalVert = skierVerticalDao.getTotalVertByResortDaySkierID(resortID, Integer.valueOf(skierID), Integer.valueOf(dayID));
+          String recordKey = getResortDaySkierIDRedisKey(resortID, skierID, dayID);
+          if (jedis.exists(recordKey)) { //Get from the cache
+            totalVert = Integer.valueOf(jedis.get(recordKey));
+          } else {
+            totalVert = skierVerticalDao.getTotalVertByResortDaySkierID(resortID, Integer.valueOf(skierID), Integer.valueOf(dayID));
+            jedis.set(recordKey, String.valueOf(totalVert));
+          }
           outputJson = this.gson.toJson(new SkierVertical(resortID, totalVert));
         } catch (SkierServerException e) {
           response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
@@ -179,7 +184,13 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
         String resortID = query.split("=")[1];
         int totalVert = 0;
         try {
-          totalVert = skierVerticalDao.getTotalVertBySkierIdResortId(resortID, Integer.valueOf(skierID));
+          String recordKey = getSkierIdResortIdRedisKey(resortID, skierID);
+          if (jedis.exists(recordKey)) {
+            totalVert = Integer.valueOf(jedis.get(recordKey));
+          } else {
+            totalVert = skierVerticalDao.getTotalVertBySkierIdResortId(resortID, Integer.valueOf(skierID));
+            jedis.set(recordKey, String.valueOf(totalVert));
+          }
           outputJson = this.gson.toJson(new SkierVertical(resortID, totalVert));
         } catch (SkierServerException e) {
           response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
@@ -189,6 +200,16 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
 
       out.println(outputJson);
     }
+  }
+
+  private String getResortDaySkierIDRedisKey(String resortId, String skierID, String DayId) {
+    StringBuilder sb = new StringBuilder();
+    return sb.append(resortId).append(":").append(skierID).append(":").append(DayId).toString();
+  }
+
+  private String getSkierIdResortIdRedisKey(String resortId, String skierId) {
+    StringBuilder sb = new StringBuilder();
+    return sb.append(resortId).append(":").append(skierId).toString();
   }
 
   int validateGetRequest(String URI) {
