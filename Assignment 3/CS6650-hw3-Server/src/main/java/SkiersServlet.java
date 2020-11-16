@@ -40,7 +40,6 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
 
   final static JedisPoolConfig poolConfig = buildPoolConfig();
   static JedisPool jedisPool;
-//  private Jedis jedis;
 
   static {
     defaultConfig = new GenericObjectPoolConfig();
@@ -70,12 +69,6 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
     this.liftRideDao = new LiftRideDao();
     this.skierVerticalDao = new SkierVerticalDao();
     this.jedisPool = new JedisPool(poolConfig, "localhost", 6379, 4000);
-//    this.jedis = jedisPool.getResource();
-
-//    this.jedis = new Jedis("localhost", 6379, 1800);
-//    this.jedis = new Jedis("localhost");
-//    this.jedis.connect();
-//    this.jedis.configSet("timeout", "300");
 
     //Creating connection factory to be used
     ConnectionFactory factory = new ConnectionFactory();
@@ -123,6 +116,20 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
         } catch (TimeoutException e) {
           response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
           message.setMessage("Server failed to process request, with reason " + e.getMessage());
+        }
+
+        try (Jedis jedis = jedisPool.getResource()) { //Delete cache on update
+          String recordKey1 = getResortDaySkierIDRedisKey(liftRide.getResortID(), String.valueOf(liftRide.getSkierID()),
+                  String.valueOf(liftRide.getDayID()));
+          String recordKey2 = getSkierIdResortIdRedisKey(liftRide.getResortID(), String.valueOf(liftRide.getSkierID()));
+          if (jedis.exists(recordKey1)) {
+            jedis.del(recordKey1);
+            System.out.println("Cache updated");
+          }
+          if (jedis.exists(recordKey2)) {
+            jedis.del(recordKey2);
+            System.out.println("Cache updated");
+          }
         }
         response.setStatus(HttpStatus.SC_CREATED);
       }
@@ -291,4 +298,12 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
     return 1;
   }
 
+
+  @Override
+  public void destroy() {
+    super.destroy();
+    jedisPool.getResource().flushAll();
+    jedisPool.destroy();
+    System.out.println("Destroy called");
+  }
 }
