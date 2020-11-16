@@ -9,6 +9,7 @@ import org.apache.http.HttpStatus;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -23,6 +24,8 @@ import model.LiftRide;
 import model.ResponseMsg;
 import model.SkierVertical;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 @WebServlet(name = "SkierServlet")
 public class SkiersServlet extends javax.servlet.http.HttpServlet {
@@ -34,6 +37,9 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
   // private RBMQConnectionUtil rbmqConnectionUtil;
   public static GenericObjectPoolConfig defaultConfig;
   private Connection connection;
+
+  final static JedisPoolConfig poolConfig = buildPoolConfig();
+  static JedisPool jedisPool;
   private Jedis jedis;
 
   static {
@@ -44,10 +50,33 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
     defaultConfig.setBlockWhenExhausted(false);
   }
 
+
+
+  private static JedisPoolConfig buildPoolConfig() {
+    final JedisPoolConfig poolConfig = new JedisPoolConfig();
+    poolConfig.setMaxTotal(128);
+    poolConfig.setMaxIdle(128);
+    poolConfig.setMinIdle(16);
+    poolConfig.setTestOnBorrow(true);
+    poolConfig.setTestOnReturn(true);
+    poolConfig.setTestWhileIdle(true);
+    poolConfig.setMinEvictableIdleTimeMillis(Duration.ofSeconds(60).toMillis());
+    poolConfig.setTimeBetweenEvictionRunsMillis(Duration.ofSeconds(30).toMillis());
+    poolConfig.setNumTestsPerEvictionRun(3);
+    poolConfig.setBlockWhenExhausted(true);
+    return poolConfig;
+  }
+
   public void init() {
-    liftRideDao = new LiftRideDao();
-    skierVerticalDao = new SkierVerticalDao();
-    this.jedis = new Jedis();
+    this.liftRideDao = new LiftRideDao();
+    this.skierVerticalDao = new SkierVerticalDao();
+    this.jedisPool = new JedisPool(poolConfig, "localhost",6379,1800);
+    this.jedis = jedisPool.getResource();
+
+//    this.jedis = new Jedis("localhost", 6379, 1800);
+//    this.jedis = new Jedis("localhost");
+//    this.jedis.connect();
+//    this.jedis.configSet("timeout", "300");
 
     //Creating connection factory to be used
     ConnectionFactory factory = new ConnectionFactory();
@@ -164,13 +193,16 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
         String resortID = urlSplit[1];
         String dayID = urlSplit[3];
         int totalVert = 0;
-        try {
+        try {jedis.isConnected();
+          jedis.connect();
           String recordKey = getResortDaySkierIDRedisKey(resortID, skierID, dayID);
-          if (jedis.exists(recordKey)) { //Get from the cache
+          if (jedis.get(recordKey) != null) { //Get from the cache
             totalVert = Integer.valueOf(jedis.get(recordKey));
+            System.out.println("GET Served from cache");
           } else {
             totalVert = skierVerticalDao.getTotalVertByResortDaySkierID(resortID, Integer.valueOf(skierID), Integer.valueOf(dayID));
             jedis.set(recordKey, String.valueOf(totalVert));
+            System.out.println("GET Saved to cache");
           }
           outputJson = this.gson.toJson(new SkierVertical(resortID, totalVert));
         } catch (SkierServerException e) {
@@ -185,11 +217,13 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
         int totalVert = 0;
         try {
           String recordKey = getSkierIdResortIdRedisKey(resortID, skierID);
-          if (jedis.exists(recordKey)) {
+          if (jedis.get(recordKey) != null) {
             totalVert = Integer.valueOf(jedis.get(recordKey));
+            System.out.println("GET Served from cache");
           } else {
             totalVert = skierVerticalDao.getTotalVertBySkierIdResortId(resortID, Integer.valueOf(skierID));
             jedis.set(recordKey, String.valueOf(totalVert));
+            System.out.println("GET Saved to the cache");
           }
           outputJson = this.gson.toJson(new SkierVertical(resortID, totalVert));
         } catch (SkierServerException e) {
