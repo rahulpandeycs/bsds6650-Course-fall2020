@@ -1,8 +1,10 @@
 import com.google.gson.Gson;
 
+import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.http.HttpStatus;
 
@@ -17,6 +19,8 @@ import java.util.stream.Collectors;
 import javax.servlet.annotation.WebServlet;
 
 import PubSubQueue.SkiDataPublisher;
+import RabbitMQConnectionPool.RBMQChannelFactory;
+import RabbitMQConnectionPool.RBMQChannelPool;
 import dao.LiftRideDao;
 import dao.SkierVerticalDao;
 import exception.SkierServerException;
@@ -34,7 +38,8 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
   private static final long serialVersionUID = 1L;
   private LiftRideDao liftRideDao;
   private SkierVerticalDao skierVerticalDao;
-  // private RBMQConnectionUtil rbmqConnectionUtil;
+  //  private RBMQConnectionUtil rbmqConnectionUtil;
+  private RBMQChannelPool rbmqChannelPool;
   public static GenericObjectPoolConfig defaultConfig;
   private Connection connection;
 
@@ -43,9 +48,9 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
 
   static {
     defaultConfig = new GenericObjectPoolConfig();
-    defaultConfig.setMaxTotal(500);
-    defaultConfig.setMinIdle(2);
-    defaultConfig.setMaxIdle(5);
+    defaultConfig.setMaxTotal(800);
+    defaultConfig.setMinIdle(16);
+    defaultConfig.setMaxIdle(800);
     defaultConfig.setBlockWhenExhausted(false);
   }
 
@@ -73,14 +78,16 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
     //Creating connection factory to be used
     ConnectionFactory factory = new ConnectionFactory();
     try {
+      factory.setHost("localhost");
       connection = factory.newConnection();
     } catch (IOException exception) {
       exception.printStackTrace();
     } catch (TimeoutException e) {
       e.printStackTrace();
     }
-//    rbmqConnectionUtil = new RBMQConnectionUtil(new GenericObjectPool<Connection>(new RBMQConnectionFactory(),defaultConfig));
 
+    this.rbmqChannelPool = new RBMQChannelPool(new GenericObjectPool<Channel>(new RBMQChannelFactory(connection), defaultConfig));
+    //this.rbmqConnectionUtil = new RBMQConnectionUtil(new GenericObjectPool<Connection>(new RBMQConnectionFactory(),defaultConfig));
   }
 
   protected void doPost(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
@@ -112,8 +119,14 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
         message.setMessage("Complete data not provided!");
       } else {
         try {
-          new SkiDataPublisher(liftRide, connection).doPublish();
+
+          new SkiDataPublisher(liftRide, rbmqChannelPool).doPublish();
+//          new SkiDataPublisher(liftRide,connection).doPublish();
+//          rbmqConnectionUtil.returnConnection(rbmqConnection);
         } catch (TimeoutException e) {
+          response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+          message.setMessage("Server failed to process request, with reason " + e.getMessage());
+        } catch (Exception e) {
           response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
           message.setMessage("Server failed to process request, with reason " + e.getMessage());
         }

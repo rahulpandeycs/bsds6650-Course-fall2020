@@ -1,72 +1,41 @@
 package RabbitMQConnectionPool;
 
-
 import com.rabbitmq.client.Channel;
 
-import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.apache.commons.pool2.ObjectPool;
 
-import java.util.NoSuchElementException;
+import java.io.IOException;
 
-import exception.RBMQChannelException;
+public class RBMQChannelPool {
 
-public class RBMQChannelPool implements Cloneable {
+  private final ObjectPool<Channel> pool;
+  private int countOpen = 0;
+  private int countClosed = 0;
 
-  private static GenericObjectPool<Channel> internalPool;
-  public static GenericObjectPoolConfig defaultConfig;
-
-  static {
-    defaultConfig = new GenericObjectPoolConfig();
-    defaultConfig.setMaxTotal(25);
-    defaultConfig.setBlockWhenExhausted(false);
+  public RBMQChannelPool(ObjectPool<Channel> pool) {
+    this.pool = pool;
   }
 
-  public RBMQChannelPool() {
-    this(defaultConfig, new RBMQChannelPoolFactory("localhost"));
-  }
-
-  public RBMQChannelPool(final GenericObjectPoolConfig poolConfig, RBMQChannelPoolFactory factory) {
-    if (this.internalPool != null) {
-      try {
-        closeInternalPool();
-      } catch (Exception e) {
-      }
-    }
-    this.internalPool = new GenericObjectPool<Channel>(factory, poolConfig);
-  }
-
-  private void closeInternalPool() {
+  public Channel getChannel() throws IOException {
+    Channel channel = null;
     try {
-      internalPool.close();
+      channel = pool.borrowObject();
+      System.out.println("Channel open: " + countOpen);
+      return channel;
+    } catch (IOException e) {
+      throw e;
     } catch (Exception e) {
-      throw new RBMQChannelException("Could not destroy the pool", e);
+      throw new RuntimeException("Unable to borrow buffer from pool" + e.toString());
     }
   }
 
-  public void returnChannel(Channel channel) {
-    try {
-      if (channel.isOpen()) {
-        internalPool.returnObject(channel);
-      } else {
-        internalPool.invalidateObject(channel);
-      }
-    } catch (Exception e) {
-      throw new RBMQChannelException("Could not return the resource to the pool", e);
+  public void returnChannel(Channel channel) throws Exception {
+    if (null != channel) {
+      pool.returnObject(channel);
+      System.out.println("Channel closed: " + countClosed);
+      System.out.println("Channel open: " + countOpen);
+      System.out.println("Active count: " + pool.getNumActive());
+      System.out.println("Idle count: " + pool.getNumIdle());
     }
   }
-
-  public Channel getChannel() {
-    try {
-      return internalPool.borrowObject();
-    } catch (NoSuchElementException nse) {
-      if (null == nse.getCause()) { // The exception was caused by an exhausted pool
-        throw new RBMQChannelException("Could not get a resource since the pool is exhausted", nse);
-      }
-      // Otherwise, the exception was caused by the implemented activateObject() or ValidateObject()
-      throw new RBMQChannelException("Could not get a resource from the pool", nse);
-    } catch (Exception e) {
-      throw new RBMQChannelException("Could not get a resource from the pool", e);
-    }
-  }
-
 }

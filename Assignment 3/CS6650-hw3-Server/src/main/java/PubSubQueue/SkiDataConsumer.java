@@ -1,6 +1,8 @@
 package PubSubQueue;
 
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 
 import org.apache.commons.lang3.SerializationUtils;
@@ -13,7 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import RabbitMQConnectionPool.RBMQChannelFactory;
-import RabbitMQConnectionPool.RBMQChannelUtil;
+import RabbitMQConnectionPool.RBMQChannelPool;
 import dao.LiftRideDao;
 import exception.SkierServerException;
 import model.LiftRide;
@@ -32,17 +34,20 @@ public class SkiDataConsumer {
     defaultConfig.setBlockWhenExhausted(false);
   }
 
-  public static void main(String[] argv) {
+  public static void main(String[] argv) throws IOException, TimeoutException {
 
-//    final RBMQChannelPool rbmqChannelPool = new RBMQChannelPool();
-    RBMQChannelUtil rbmqConnectionUtil = new RBMQChannelUtil(new GenericObjectPool<Channel>(new RBMQChannelFactory(),defaultConfig));
+    //Connection to RabbitMQ
+    ConnectionFactory factory = new ConnectionFactory();
+    factory.setHost("localhost");
+    Connection connection = factory.newConnection();
+
+    RBMQChannelPool rbmqConnectionUtil = new RBMQChannelPool(new GenericObjectPool<Channel>(new RBMQChannelFactory(connection),defaultConfig));
 //    RBMQConnectionUtil rbmqConnectionUtil = new RBMQConnectionUtil(new GenericObjectPool<Channel>(new RBMQConnectionFactory()));
     Runnable runnable = new Runnable() {
 
       @Override
       public void run() {
         try {
-//          final Channel channel = rbmqChannelPool.getChannel();
           final Channel channel = rbmqConnectionUtil.getChannel();
           channel.queueDeclare(QUEUE_NAME, true, false, false, null);
 
@@ -85,7 +90,8 @@ public class SkiDataConsumer {
           // process messages
           channel.basicConsume(QUEUE_NAME, false, deliverCallback, consumerTag -> {
           });
-//          channel.close();
+
+          //  channel.close();
         } catch (IOException ex) {
           Logger.getLogger(SkiDataConsumer.class.getName()).log(Level.SEVERE, null, ex);
         }

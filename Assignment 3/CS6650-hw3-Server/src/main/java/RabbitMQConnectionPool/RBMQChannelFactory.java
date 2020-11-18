@@ -15,16 +15,14 @@ import exception.RBMQChannelException;
 
 public class RBMQChannelFactory extends BasePooledObjectFactory<Channel> {
 
+  private Connection connection;
+
+  public RBMQChannelFactory(Connection connection) {
+    this.connection = connection;
+  }
+
   @Override
   public Channel create() throws IOException {
-    Connection connection;
-    try {
-      ConnectionFactory factory = new ConnectionFactory();
-      factory.setHost("localhost");
-      connection = factory.newConnection();
-    } catch (Exception e) {
-      throw new RBMQChannelException("Exception Occurred", e);
-    }
     return connection.createChannel();
   }
 
@@ -41,7 +39,7 @@ public class RBMQChannelFactory extends BasePooledObjectFactory<Channel> {
    */
   @Override
   public void passivateObject(PooledObject<Channel> pooledObject) throws IOException {
-    pooledObject.getObject().abort();
+//    pooledObject.getObject();
   }
 
   // for all other methods, the no-op implementation
