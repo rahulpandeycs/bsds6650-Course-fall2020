@@ -37,7 +37,7 @@ public class ConnectionUtil {
         settings.put(Environment.SHOW_SQL, "true");
         settings.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
         settings.put(Environment.HBM2DDL_AUTO, configParameters.getHBM2DDL_AUTO());
-        settings.put(Environment.C3P0_MAX_SIZE, 10);
+        settings.put(Environment.C3P0_MAX_SIZE, 20);
 
         configuration.setProperties(settings);
         configuration.addAnnotatedClass(LiftRide.class);

@@ -48,15 +48,12 @@ public class SkiDataPublisher {
   public void doPublish() throws TimeoutException, IOException {
     try {
       // channel per thread
-//      Channel channel = connection.createChannel();
       Channel channel = channelPool.getChannel();
 
       //Second parameter to make queue durable
       channel.queueDeclare(QUEUE_NAME, true, false, false, null);
       byte[] yourBytes = SerializationUtils.serialize(liftRide);
       channel.basicPublish("", QUEUE_NAME, null, yourBytes);
-
-//      channel.close();
       Logger.getLogger(SkiDataPublisher.class.getName()).log(Level.INFO, "Message sent");
       channelPool.returnChannel(channel);
     } catch (TimeoutException | IOException ex) {

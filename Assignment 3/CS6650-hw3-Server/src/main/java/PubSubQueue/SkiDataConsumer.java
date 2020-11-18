@@ -41,7 +41,7 @@ public class SkiDataConsumer {
     factory.setHost("localhost");
     Connection connection = factory.newConnection();
 
-    RBMQChannelPool rbmqConnectionUtil = new RBMQChannelPool(new GenericObjectPool<Channel>(new RBMQChannelFactory(connection),defaultConfig));
+    RBMQChannelPool rbmqConnectionUtil = new RBMQChannelPool(new GenericObjectPool<Channel>(new RBMQChannelFactory(connection), defaultConfig));
 //    RBMQConnectionUtil rbmqConnectionUtil = new RBMQConnectionUtil(new GenericObjectPool<Channel>(new RBMQConnectionFactory()));
     Runnable runnable = new Runnable() {
 
@@ -99,9 +99,9 @@ public class SkiDataConsumer {
     };
 
     // start threads and block to receive messages
-//    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 5; i++) {
       new Thread(runnable).start();
-//    }
+    }
   }
 
   private static void retrySaveToDB(LiftRide liftRide) throws SkierServerException {
