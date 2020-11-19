@@ -99,7 +99,7 @@ public class SkiersServletTest extends Mockito {
             "  \"dayID\": 23,\n" +
             "  \"skierID\": 7887,\n" +
             "  \"time\": 217,\n" +
-            "  \"liftID\": 12\n" +
+            "  \"liftID\": 13\n" +
             "}";
     BufferedReader reader = new BufferedReader(new StringReader(input));
     when(request.getReader()).thenReturn(reader);
