@@ -19,7 +19,8 @@ import model.LiftRide;
 public class SkiDataPublisher {
 
   private LiftRide liftRide;
-  private final static String QUEUE_NAME = "LiftRideWriteQueue";
+//  private final static String QUEUE_NAME = "LiftRideWriteQueue";
+  private final static String QUEUE_NAME = "LiftRideWriteNonDurableQueue";
   private Connection connection;
   RBMQChannelPool channelPool;
 

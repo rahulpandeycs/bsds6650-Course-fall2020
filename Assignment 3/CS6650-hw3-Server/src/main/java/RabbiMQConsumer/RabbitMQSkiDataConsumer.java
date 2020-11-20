@@ -21,7 +21,8 @@ import model.LiftRide;
 
 public class RabbitMQSkiDataConsumer {
 
-  private final static String QUEUE_NAME = "LiftRideWriteQueue";
+//  private final static String QUEUE_NAME = "LiftRideWriteQueue";
+  private final static String QUEUE_NAME = "LiftRideWriteNonDurableQueue";
   private static RabbitMQConsumerDao liftRideDao = new RabbitMQConsumerDao();
   public static GenericObjectPoolConfig defaultConfig;
 
