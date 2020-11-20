@@ -20,7 +20,6 @@ public class RBMQChannelPool {
     Channel channel = null;
     try {
       channel = pool.borrowObject();
-      System.out.println("Channel open: " + countOpen);
       return channel;
     } catch (IOException e) {
       throw e;
@@ -32,10 +31,6 @@ public class RBMQChannelPool {
   public void returnChannel(Channel channel) throws Exception {
     if (null != channel) {
       pool.returnObject(channel);
-      System.out.println("Channel closed: " + countClosed);
-      System.out.println("Channel open: " + countOpen);
-      System.out.println("Active count: " + pool.getNumActive());
-      System.out.println("Idle count: " + pool.getNumIdle());
     }
   }
 }

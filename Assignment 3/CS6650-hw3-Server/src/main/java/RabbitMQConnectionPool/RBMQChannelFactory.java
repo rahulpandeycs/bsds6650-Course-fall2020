@@ -2,16 +2,12 @@ package RabbitMQConnectionPool;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 
 import java.io.IOException;
-import java.util.concurrent.TimeoutException;
-
-import exception.RBMQChannelException;
 
 public class RBMQChannelFactory extends BasePooledObjectFactory<Channel> {
 

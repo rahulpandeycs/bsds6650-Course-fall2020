@@ -12,6 +12,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -45,6 +47,7 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
 
   final static JedisPoolConfig poolConfig = buildPoolConfig();
   static JedisPool jedisPool;
+  static Map<String, String> redisMap;
 
   static {
     defaultConfig = new GenericObjectPoolConfig();
@@ -73,12 +76,22 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
   public void init() {
     this.liftRideDao = new LiftRideDao();
     this.skierVerticalDao = new SkierVerticalDao();
-    this.jedisPool = new JedisPool(poolConfig, "localhost", 6379, 4000);
+//    this.jedisPool = new JedisPool(poolConfig, "localhost", 6379, 4000);
+    this.redisMap = new HashMap<>();
 
     //Creating connection factory to be used
     ConnectionFactory factory = new ConnectionFactory();
     try {
-      factory.setHost("localhost");
+
+//      localhost
+//      factory.setHost("localhost");
+
+      factory.setUsername("ubuntu");
+      factory.setPassword("password");
+      factory.setVirtualHost("/");
+      factory.setHost("ec2-52-91-132-255.compute-1.amazonaws.com");
+      factory.setPort(5672);
+
       connection = factory.newConnection();
     } catch (IOException exception) {
       exception.printStackTrace();
@@ -121,8 +134,7 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
         try {
 
           new SkiDataPublisher(liftRide, rbmqChannelPool).doPublish();
-//          new SkiDataPublisher(liftRide,connection).doPublish();
-//          rbmqConnectionUtil.returnConnection(rbmqConnection);
+
         } catch (TimeoutException e) {
           response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
           message.setMessage("Server failed to process request, with reason " + e.getMessage());
@@ -131,19 +143,32 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
           message.setMessage("Server failed to process request, with reason " + e.getMessage());
         }
 
-        try (Jedis jedis = jedisPool.getResource()) { //Delete cache on update
-          String recordKey1 = getResortDaySkierIDRedisKey(liftRide.getResortID(), String.valueOf(liftRide.getSkierID()),
-                  String.valueOf(liftRide.getDayID()));
-          String recordKey2 = getSkierIdResortIdRedisKey(liftRide.getResortID(), String.valueOf(liftRide.getSkierID()));
-          if (jedis.exists(recordKey1)) {
-            jedis.del(recordKey1);
-            System.out.println("Cache updated");
-          }
-          if (jedis.exists(recordKey2)) {
-            jedis.del(recordKey2);
-            System.out.println("Cache updated");
-          }
+//        try (Jedis jedis = jedisPool.getResource()) { //Delete cache on update
+//          String recordKey1 = getResortDaySkierIDRedisKey(liftRide.getResortID(), String.valueOf(liftRide.getSkierID()),
+//                  String.valueOf(liftRide.getDayID()));
+//          String recordKey2 = getSkierIdResortIdRedisKey(liftRide.getResortID(), String.valueOf(liftRide.getSkierID()));
+//          if (jedis.exists(recordKey1)) {
+//            jedis.del(recordKey1);
+//            System.out.println("Cache updated");
+//          }
+//          if (jedis.exists(recordKey2)) {
+//            jedis.del(recordKey2);
+//            System.out.println("Cache updated");
+//          }
+//        }
+
+        String recordKey1 = getResortDaySkierIDRedisKey(liftRide.getResortID(), String.valueOf(liftRide.getSkierID()),
+                String.valueOf(liftRide.getDayID()));
+        String recordKey2 = getSkierIdResortIdRedisKey(liftRide.getResortID(), String.valueOf(liftRide.getSkierID()));
+        if (redisMap.containsKey(recordKey1)) {
+          redisMap.remove(recordKey1);
+          System.out.println("Cache updated");
         }
+        if (redisMap.containsKey(recordKey2)) {
+          redisMap.remove(recordKey2);
+          System.out.println("Cache updated");
+        }
+
         response.setStatus(HttpStatus.SC_CREATED);
       }
     } else if ("PUT".equalsIgnoreCase(request.getMethod()) || "DELETE".equalsIgnoreCase(request.getMethod())) {
@@ -216,12 +241,17 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
             jedis.isConnected();
             jedis.connect();
             String recordKey = getResortDaySkierIDRedisKey(resortID, skierID, dayID);
-            if (jedis.get(recordKey) != null) { //Get from the cache
-              totalVert = Integer.valueOf(jedis.get(recordKey));
+//            if (jedis.get(recordKey) != null) { //Get from the cache
+//              totalVert = Integer.valueOf(jedis.get(recordKey));
+//              System.out.println("GET Served from cache");
+//            }
+            if (redisMap.containsKey(recordKey)) {
+              totalVert = Integer.valueOf(redisMap.get(recordKey));
               System.out.println("GET Served from cache");
             } else {
               totalVert = skierVerticalDao.getTotalVertByResortDaySkierID(resortID, Integer.valueOf(skierID), Integer.valueOf(dayID));
-              jedis.set(recordKey, String.valueOf(totalVert));
+//              jedis.set(recordKey, String.valueOf(totalVert));
+              redisMap.put(recordKey,String.valueOf(totalVert));
               System.out.println("GET Saved to cache");
             }
             outputJson = this.gson.toJson(new SkierVertical(resortID, totalVert));

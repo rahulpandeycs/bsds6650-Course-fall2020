@@ -22,7 +22,6 @@ public class SkiDataPublisher {
   private final static String QUEUE_NAME = "LiftRideWriteQueue";
   private Connection connection;
   RBMQChannelPool channelPool;
-//  private RBMQConnectionUtil rbmqConnectionPool;
 
   public static GenericObjectPoolConfig defaultConfig;
 
@@ -34,10 +33,6 @@ public class SkiDataPublisher {
     defaultConfig.setBlockWhenExhausted(false);
   }
 
-//  public SkiDataPublisher(LiftRide liftRide, Connection connection) {
-//    this.liftRide = liftRide;
-//    this.connection = connection;
-//  }
 
   public SkiDataPublisher(LiftRide liftRide, RBMQChannelPool channelPool) {
     this.liftRide = liftRide;
@@ -50,8 +45,8 @@ public class SkiDataPublisher {
       // channel per thread
       Channel channel = channelPool.getChannel();
 
-      //Second parameter to make queue durable
-      channel.queueDeclare(QUEUE_NAME, true, false, false, null);
+      //Second parameter to make queue durable, Changing it to non durable for testing
+      channel.queueDeclare(QUEUE_NAME, false, false, false, null);
       byte[] yourBytes = SerializationUtils.serialize(liftRide);
       channel.basicPublish("", QUEUE_NAME, null, yourBytes);
       Logger.getLogger(SkiDataPublisher.class.getName()).log(Level.INFO, "Message sent");

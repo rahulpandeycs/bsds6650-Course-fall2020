@@ -5,9 +5,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
+import PubSubQueue.SkiDataPublisher;
 import model.LiftRide;
 
 public class RabbitMQConsumerDao {
@@ -36,7 +39,7 @@ public class RabbitMQConsumerDao {
       jdbcObj.printDbStatus();
 
       //bsdsCS6650
-      pstmtObj = connObj.prepareStatement("INSERT INTO mysqlslap.liftRide (dayId, resortID, skierID, time, liftID) " +
+      pstmtObj = connObj.prepareStatement("INSERT INTO bsdsCS6650.liftRide (dayId, resortID, skierID, time, liftID) " +
               "VALUES (?, ?, ?, ?, ?) " +
               "ON DUPLICATE KEY UPDATE " +
               "dayId = VALUES(dayId), " +
@@ -52,6 +55,7 @@ public class RabbitMQConsumerDao {
       pstmtObj.setString(5, String.valueOf(liftRide.getLiftID()));
 
       rsObj = pstmtObj.executeUpdate(); //save or update lift ride
+      Logger.getLogger(RabbitMQConsumerDao.class.getName()).log(Level.INFO, "Record inserted successfully ");
 
     } finally {
       try {

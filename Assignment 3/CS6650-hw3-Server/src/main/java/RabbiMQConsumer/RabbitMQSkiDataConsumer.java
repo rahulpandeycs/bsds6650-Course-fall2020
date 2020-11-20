@@ -35,9 +35,16 @@ public class RabbitMQSkiDataConsumer {
 
   public static void main(String[] argv) throws IOException, TimeoutException {
 
-    //Connection to RabbitMQ
+    //Connection to RabbitMQrabbitmqctl set_permissions -p "custom-vhost" "username" ".*" ".*" ".*"
     ConnectionFactory factory = new ConnectionFactory();
-    factory.setHost("localhost");
+    factory.setUsername("ubuntu");
+    factory.setPassword("password");
+    factory.setVirtualHost("/");
+    factory.setHost("ec2-52-91-132-255.compute-1.amazonaws.com");
+    factory.setPort(5672);
+
+//    // Local
+//    factory.setHost("localhost");
     Connection connection = factory.newConnection();
 
     RBMQChannelPool rbmqConnectionUtil = new RBMQChannelPool(new GenericObjectPool<Channel>(new RBMQChannelFactory(connection), defaultConfig));
@@ -47,7 +54,7 @@ public class RabbitMQSkiDataConsumer {
       public void run() {
         try {
           final Channel channel = rbmqConnectionUtil.getChannel();
-          channel.queueDeclare(QUEUE_NAME, true, false, false, null);
+          channel.queueDeclare(QUEUE_NAME, false, false, false, null);
 
           // max one message per receiver
           channel.basicQos(1);
@@ -61,6 +68,7 @@ public class RabbitMQSkiDataConsumer {
             } catch (SQLException throwables) {
               retrySaveToDB(liftRide, 1);
             }
+            System.out.println(" Data saved!");
           };
 
           // process messages
@@ -75,7 +83,7 @@ public class RabbitMQSkiDataConsumer {
     };
 
     // start threads and block to receive messages
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 18; i++) {
       new Thread(runnable).start();
     }
   }
