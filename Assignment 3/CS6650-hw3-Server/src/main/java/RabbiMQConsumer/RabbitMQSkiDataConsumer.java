@@ -84,7 +84,7 @@ public class RabbitMQSkiDataConsumer {
     };
 
     // start threads and block to receive messages
-    for (int i = 0; i < 18; i++) {
+    for (int i = 0; i < 20; i++) {
       new Thread(runnable).start();
     }
   }
