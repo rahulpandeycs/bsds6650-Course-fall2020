@@ -51,9 +51,9 @@ public class SkiersServlet extends javax.servlet.http.HttpServlet {
 
   static {
     defaultConfig = new GenericObjectPoolConfig();
-    defaultConfig.setMaxTotal(800);
+    defaultConfig.setMaxTotal(250);
     defaultConfig.setMinIdle(16);
-    defaultConfig.setMaxIdle(800);
+    defaultConfig.setMaxIdle(250);
     defaultConfig.setBlockWhenExhausted(false);
   }
 
