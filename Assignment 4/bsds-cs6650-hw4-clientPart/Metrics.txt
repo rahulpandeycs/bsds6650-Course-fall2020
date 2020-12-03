@@ -1,0 +1,9 @@
+Number of failed requests: 0
+Number of Successful requests: 300
+Mean responseTime:1790 ms
+Median responseTime:1320 ms
+The total run time (wall time) :52321 ms
+Total Requests: 300
+Throughput: 5 requests/sec
+p99 (99th percentile) response time :9265
+Max response time:9276 ms

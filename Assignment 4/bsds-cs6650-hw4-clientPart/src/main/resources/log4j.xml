@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE log4j:configuration SYSTEM "log4j.dtd"><log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+    <appender name="SYSLOG" class="org.apache.log4j.net.SyslogAppender">
+        <param name="Facility" value="LOCAL0"/>
+        <param name="FacilityPrinting" value="false"/>
+        <param name="SyslogHost" value="localhost"/>
+        <param name="Threshold" value="INFO"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p [WhereRU][%t|%c{1}] %L %M %m\n"/>
+        </layout>
+    </appender>
+    <appender name="SERVER_DEBUG" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="DatePattern" value="'-'yyyy-MM-dd'.log'"/>
+        <param name="File" value="/var/log/testing/testing-debug"/>
+        <param name="Threshold" value="DEBUG"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p [WhereRU][%t|%c{1}] %L %M %m\n"/>
+        </layout>
+    </appender>
+    <appender name="SERVER_ERROR" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="DatePattern" value="'-'yyyy-MM-dd'.log'"/>
+        <param name="File" value="/var/log/testing/testing-error"/>
+        <param name="Threshold" value="ERROR"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p [WhereRU][%t|%c{1}] %L %M %m\n"/>
+        </layout>
+    </appender>
+    <appender name="STDOUT" class="org.apache.log4j.ConsoleAppender">
+        <param name="Target" value="System.out" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p [WhereRU][%t|%c{1}] %L %M %m\n" />
+        </layout>
+    </appender>
+
+    <logger name="com.testing" additivity="false">
+        <level value="DEBUG"/>
+        <appender-ref ref="SYSLOG"/>
+        <appender-ref ref="SERVER_DEBUG"/>
+        <appender-ref ref="SERVER_ERROR"/>
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="org.springframework" additivity="false">
+        <level value="ERROR"/>
+        <appender-ref ref="SERVER_ERROR"/>
+    </logger>
+
+    <logger name="org.apache" additivity="false">
+        <level value="ERROR"/>
+        <appender-ref ref="SERVER_ERROR"/>
+    </logger>
+
+    <logger name="org.springframework.integration">
+        <level value="info" />
+    </logger>
+
+    <logger name="org.springframework.integration.samples">
+        <level value="info" />
+    </logger>
+
+    <!-- Everything else to catalina.out -->
+    <root>
+        <level value="ERROR"/>
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="SERVER_DEBUG" />
+        <appender-ref ref="SERVER_ERROR" />
+    </root></log4j:configuration>
